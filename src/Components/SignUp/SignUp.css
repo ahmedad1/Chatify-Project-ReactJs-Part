@@ -1,0 +1,18 @@
+form{
+    outline: none;
+    border: none;
+    background-color: rgba(255, 255, 255, .1)!important;
+}
+/* .loginTitle{
+    color: rgba(255, 255, 255, .4);
+} */
+.input-control{
+    background-color: rgba(255, 255, 255, .2)!important;
+    color: rgba(255, 255, 255, .85)!important;
+    outline: none !important;
+    border: none !important;
+}
+.form-label{
+    
+    color: rgba(255, 255, 255, .8)!important;
+}

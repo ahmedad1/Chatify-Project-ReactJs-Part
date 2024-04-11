@@ -1,0 +1,9 @@
+.nav-link{
+    cursor: pointer;
+}
+.nav-link:hover{
+    color: var(--bs-info)!important;
+}
+.navbar-brand{
+    cursor: pointer;
+}

@@ -1,0 +1,34 @@
+.Auth{
+
+height: 92.4vh;
+}
+.messagesContent,.peopleSection{
+ height: 71vh; 
+}
+.message-text,.search{
+    background: rgba(255, 255, 255, .4)!important;
+    border: none !important;
+    transition-duration:.5s ;
+
+    
+}
+.search:hover{
+    background-color:rgba(255, 255, 255, .7) !important;
+
+}
+.message-text:hover,.person:hover{
+    background-color:rgba(255, 255, 255, .9) !important;
+}
+.person{
+    background-color:rgba(255, 255, 255, .7) !important;
+    cursor: pointer;
+}
+.person:hover{
+    color:var(--bs-info)
+}
+@media (max-width:991px) {
+    .row{
+        width: 100%!important;
+        margin:auto !important
+    }
+}
