@@ -5,20 +5,22 @@ import Login from './Components/Login/Login';
 import { Routes, Route } from "react-router-dom"
 import SignUp from './Components/SignUp/SignUp';
 import Home from './Components/Home/Home';
+import EmailVerification from './Components/EmailVerification/EmailVerification';
 
 function App() {
 
   return (
     <>
+     
+      <Navbar/>
+      
       <Routes>
-        <Route path='/users/:user' element={<Navbar.Authenticated />} />
-        <Route path='*' element={<Navbar />} />
-      </Routes>
-      <Routes>
+     
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/sign-up" element={<SignUp />} />
-        <Route path='/users/:user' element={<Home.Authenticated />} />
+        <Route path="/verification"element={<EmailVerification/>}/>
+        <Route path='*' element={<Home/>}/>
       </Routes>
       <ParticlesComp id="tsparitcles" />
     </>

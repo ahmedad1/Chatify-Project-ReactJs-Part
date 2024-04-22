@@ -3,7 +3,7 @@ import {createSlice}from "@reduxjs/toolkit"
 
 let backendOriginSlice=createSlice({
 name:"backendOriginSlice",
-initialState:window.location.origin,
+initialState:"https://localhost:7155/api/Account/",
 reducers:{
 setBackendOrigin:(state,action)=>{
     

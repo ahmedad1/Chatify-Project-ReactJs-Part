@@ -7,7 +7,19 @@ import Messages from "../Messages/Messages";
 import MessagesHead from "../Messages/MessagesHead";
 import Friends from "../Friends/Friends";
 import { useRef } from "react";
+import Cookies from "cookie-universal"
+import checkAllCookies from "../../CookiesHandler/checkAllCookies";
 function Home(props) {
+  const cookies= Cookies();
+ 
+  return (
+    <>
+     {checkAllCookies()?<HomeAutenticated/>:<HomeNotAuthenticated/>}
+    </>
+  );
+}
+
+var HomeNotAuthenticated=(props)=>{
   return (
     <>
       <Main>
@@ -27,7 +39,7 @@ function Home(props) {
   );
 }
 
-let HomeAutenticated =(props)=>  {
+var HomeAutenticated =(props)=>  {
  const messagesSectionRef=useRef();
  const peopleSectionRef=useRef();
   
@@ -37,7 +49,7 @@ let HomeAutenticated =(props)=>  {
         <div className=" row m-lg-auto pt-lg-5 px-lg-5">
           <div className="col-lg-9 d-lg-block d-none"ref={messagesSectionRef}>
             {/* <MessagesHead dest={"Mohamed"} isTyping={true}/> */}
-            <MessagesHead />
+            <MessagesHead messagesSection={messagesSectionRef} peopleSection={peopleSectionRef}/>
             <Messages messages={[{ id: 1, sender: "You", content: "hi" }]} />
           </div>
           <div className="col-lg-3 col-12"ref={peopleSectionRef}>
@@ -75,5 +87,5 @@ let HomeAutenticated =(props)=>  {
   );
 
 };
-Home.Authenticated =HomeAutenticated;
+
 export default Home;

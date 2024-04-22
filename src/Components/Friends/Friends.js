@@ -27,7 +27,7 @@ function Friends(props) {
           showMessagesHandler(f);
         }}
       >
-        <span>
+        <span className="text-center">
           <i className="fa-regular fa-user"></i>{" "}
           <small className="ms-2  ">
             <span>
