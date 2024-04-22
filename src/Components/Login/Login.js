@@ -8,24 +8,25 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import checkAllCookies from "../../CookiesHandler/checkAllCookies";
 function Login() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  
   let [userName, setUserName] = useState("");
   let [password, setPassword] = useState("");
   let userNameInputRef = useRef();
   let backendOrigin = useSelector((s) => s.backendOrigin);
- 
+
   useEffect((_) => {
-    if(checkAllCookies())
-    navigate("/")
+    if (checkAllCookies()) navigate("/");
     userNameInputRef.current.focus();
   }, []);
   async function loginBtnHandler(e) {
     e.preventDefault();
-    const result=await axios.post(`${backendOrigin}login`,{userName:userName,password:password},{withCredentials:true})
-    if(result.status==200)
-    navigate("/")
+    const result = await axios.post(
+      `${backendOrigin}login`,
+      { userName: userName, password: password },
+      { withCredentials: true }
+    );
+    if (result.status == 200) navigate("/");
   }
   return (
     <Main>
@@ -39,6 +40,7 @@ function Login() {
             ref={userNameInputRef}
             className="form-control input-control"
             onChange={(e) => setUserName(e.target.value)}
+            required
           />
         </div>
         <div className=" mt-5">
@@ -47,6 +49,7 @@ function Login() {
             type="password"
             className="form-control input-control"
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
           <Link to="/sign-up" className="input-text">
             dont have account?
@@ -54,7 +57,7 @@ function Login() {
         </div>
         <button
           className=" btn btn-outline-info mt-5"
-          onClick={e=>loginBtnHandler(e)}
+          onClick={(e) => loginBtnHandler(e)}
         >
           Login
         </button>
