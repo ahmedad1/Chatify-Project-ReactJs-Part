@@ -15,13 +15,14 @@ form{
 .form-label{
     
     color: rgba(255, 255, 255, .8)!important;
+    cursor: pointer;
 }
-.input-text{
+.input-text-login{
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.3)!important;
+    color: rgba(255, 255, 255, 0.4)!important;
    
 }
-.input-text:hover{
-    color: rgba(255, 255, 255, .5)!important;
+.input-text-login:hover{
+    color: rgba(255, 255, 255, .6)!important;
 
 }

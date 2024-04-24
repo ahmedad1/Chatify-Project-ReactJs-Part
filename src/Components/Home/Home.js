@@ -9,8 +9,10 @@ import Friends from "../Friends/Friends";
 import { useRef } from "react";
 import Cookies from "cookie-universal"
 import checkAllCookies from "../../CookiesHandler/checkAllCookies";
+import { useSelector } from "react-redux";
 function Home(props) {
   const cookies= Cookies();
+  const signOut =useSelector(x=>x.signOutFlag)
  
   return (
     <>

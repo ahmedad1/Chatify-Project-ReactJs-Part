@@ -1,11 +1,14 @@
 import React, { useEffect } from "react";
 import "./Navbar.css"
-import { Link,useParams } from "react-router-dom";
+import { Link,useNavigate,useParams } from "react-router-dom";
 import checkAllCookies from "../../CookiesHandler/checkAllCookies";
 import { useLocation } from "react-router-dom";
 import Cookies from "cookie-universal"
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setCurrentChat } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
+import axios from "axios";
+import Swal from "sweetalert2";
+import { signOut } from "../../Redux-Toolkit/Slices/SignOutSlice";
 function Navbar(props) {
 const location=useLocation()
 useEffect(_=>{},[location.pathname=="/"])
@@ -40,6 +43,20 @@ var NotAuthenticated=(props)=>{
 var Authenticated=(props)=>{
    const cookies=Cookies()
    const dispatch=useDispatch()
+   const backendUrl=useSelector(x=>x.backendOrigin)
+   const navigate=useNavigate()
+  async function signOutHandler(){
+    try{
+    await axios.delete(`${backendUrl}sign-out`,{withCredentials:true})
+     navigate("/")
+     dispatch(signOut())
+     
+    }
+    catch{
+        Swal.fire("Something went wrong ... try again")
+    }
+    
+   }
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
             <div className="container">
@@ -54,7 +71,7 @@ var Authenticated=(props)=>{
                         <li className="nav-item"><a className="nav-link text-info"><i className="fa-regular fa-user"></i> {cookies.get("firstName")}</a></li>
 
                     </ul>
-                   
+                   <button className="btn btn-outline-info"onClick={signOutHandler}>Sign Out</button>
                 </div>
 
             </div>

@@ -9,6 +9,7 @@ function SignUp() {
   const navigate = useNavigate();
   let userNameInputRef=useRef()
   let emailInputRef=useRef()
+  let passwordInputRef=useRef()
   let [firstName, setFirstName] = useState("");
   let [lastName, setLastName] = useState("");
   let [email, setEmail] = useState("");
@@ -109,10 +110,21 @@ function SignUp() {
             className="form-control input-control"
             onChange={(e) => setPassword(e.target.value)}
             required
+            ref={passwordInputRef}
+            
           />
         </div>
+        <div className=" mt-2 px-lg-5 px-1">
+          <input
+            type="checkbox"
+            className="input-control"
+            onChange={e=>{passwordInputRef.current.type=e.target.checked?"text":"password"}}
+            id="showPasswordInp"
+          />
+          <label htmlFor="showPasswordInp" className="form-label ms-2 ">Show password</label>
+        </div>
         <button
-          onClick={(_) => {}}
+          type="submit"
           className=" btn btn-outline-info mt-4 ms-lg-5"
         >
           Sign Up

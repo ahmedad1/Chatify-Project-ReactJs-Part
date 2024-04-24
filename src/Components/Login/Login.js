@@ -13,6 +13,7 @@ function Login() {
   let [userName, setUserName] = useState("");
   let [password, setPassword] = useState("");
   let userNameInputRef = useRef();
+  let passwordInputRef = useRef();
   let backendOrigin = useSelector((s) => s.backendOrigin);
 
   useEffect((_) => {
@@ -50,11 +51,26 @@ function Login() {
             className="form-control input-control"
             onChange={(e) => setPassword(e.target.value)}
             required
+            ref={passwordInputRef}
           />
-          <Link to="/sign-up" className="input-text">
+          <Link to="/sign-up" className="input-text-login">
             dont have account?
           </Link>
         </div>
+        <div className=" mt-5">
+          <input
+            type="checkbox"
+            className="input-control"
+            onChange={(e) => {
+              passwordInputRef.current.type = e.target.checked
+                ? "text"
+                : "password";
+            }}
+            id="showPasswordCheckbox"
+          />
+          <label htmlFor="showPasswordCheckbox" className="form-label ms-2">Show Password</label>
+        </div>
+
         <button
           className=" btn btn-outline-info mt-5"
           onClick={(e) => loginBtnHandler(e)}
