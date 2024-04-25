@@ -55,7 +55,7 @@ function EmailVerification(props) {
         email: localStorage.getItem("email"),
         code: code,
       });
-      Swal.fire("Confirmed Successfully").then((res) => {
+      Swal.fire({title:"Confirmed Successfully",icon:"success"}).then((res) => {
         if (res.isConfirmed || res.isDismissed) {
           localStorage.removeItem("email");
           navigate("/login");

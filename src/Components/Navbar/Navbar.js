@@ -45,14 +45,17 @@ var Authenticated=(props)=>{
    const dispatch=useDispatch()
    const backendUrl=useSelector(x=>x.backendOrigin)
    const navigate=useNavigate()
-  async function signOutHandler(){
+   async function signOutHandler(){
+    document.querySelector(".fa-spinner").classList.remove("d-none")
     try{
-    await axios.delete(`${backendUrl}sign-out`,{withCredentials:true})
-     navigate("/")
-     dispatch(signOut())
+        await axios.delete(`${backendUrl}sign-out`,{withCredentials:true})
+        navigate("/")
+        dispatch(signOut())
      
     }
     catch{
+        document.querySelector(".fa-spinner").classList.add("d-none")
+
         Swal.fire("Something went wrong ... try again")
     }
     
@@ -71,7 +74,7 @@ var Authenticated=(props)=>{
                         <li className="nav-item"><a className="nav-link text-info"><i className="fa-regular fa-user"></i> {cookies.get("firstName")}</a></li>
 
                     </ul>
-                   <button className="btn btn-outline-info"onClick={signOutHandler}>Sign Out</button>
+                   <button className="btn btn-outline-info"onClick={signOutHandler}>Sign Out<i className="fa-solid fa-spinner fa-spin ms-2 d-none" ></i></button>
                 </div>
 
             </div>

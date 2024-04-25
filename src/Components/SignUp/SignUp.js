@@ -5,56 +5,66 @@ import checkAllCookies from "../../CookiesHandler/checkAllCookies";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import Swal from "sweetalert2";
 function SignUp() {
   const navigate = useNavigate();
-  let userNameInputRef=useRef()
-  let emailInputRef=useRef()
-  let passwordInputRef=useRef()
+  let userNameInputRef = useRef();
+  let emailInputRef = useRef();
+  let passwordInputRef = useRef();
   let [firstName, setFirstName] = useState("");
   let [lastName, setLastName] = useState("");
   let [email, setEmail] = useState("");
   let [userName, setUserName] = useState("");
   let [password, setPassword] = useState("");
   let firstNameInputRef = useRef();
-  const backendUrl=useSelector(x=>x.backendOrigin)
+  const backendUrl = useSelector((x) => x.backendOrigin);
   useEffect((_) => {
     if (checkAllCookies()) navigate("/");
 
     firstNameInputRef.current.focus();
   }, []);
-  async function submitionHandler(e){
-    e.preventDefault()
+  async function submitionHandler(e) {
+    e.preventDefault();
     let result;
-    try{
-     result=await axios.post(`${backendUrl}sign-up`,{
-      firstName:firstName,
-      lastName:lastName,
-      email:email,
-      userName:userName,
-      password:password
-    })
-    localStorage.setItem("email",email)
-    navigate("/verification")
-  }catch(e){
-    
-    if(e.response.data.hasRepeatedEmail){
-      emailInputRef.current.classList.add("is-invalid")
-      emailInputRef.current.focus()
-      userNameInputRef.current.classList.remove("is-invalid")
-    }else if (e.response.data.hasRepeatedUserName){
-      userNameInputRef.current.classList.add("is-invalid")
-      userNameInputRef.current.focus()
-      emailInputRef.current.classList.remove("is-invalid")
-
-
+    document.querySelector(".fa-spinner").classList.remove("d-none");
+    try {
+      result = await axios.post(`${backendUrl}sign-up`, {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        userName: userName,
+        password: password,
+      });
+      localStorage.setItem("email", email);
+      navigate("/verification");
+    } catch (e) {
+      document.querySelector(".fa-spinner").classList.add("d-none");
+      if (e.response.data.hasRepeatedEmail) {
+        emailInputRef.current.classList.add("is-invalid");
+        emailInputRef.current.focus();
+        userNameInputRef.current.classList.remove("is-invalid");
+      } else if (e.response.data.hasRepeatedUserName) {
+        userNameInputRef.current.classList.add("is-invalid");
+        userNameInputRef.current.focus();
+        emailInputRef.current.classList.remove("is-invalid");
+      }
+      else{
+        if(e.response.data?.errors)
+        for(let i in e.response.data.errors){
+        Swal.fire({title:e.response.data.errors[i][0]})
+        break;
+        }
+      }
     }
-  }
   }
   return (
     <Main>
-      <form className="container p-lg-5 p-4 " onSubmit={async e=>{
-       await submitionHandler(e);
-      }}>
+      <form
+        className="container p-lg-5 p-4 "
+        onSubmit={async (e) => {
+          await submitionHandler(e);
+        }}
+      >
         <h3 className="text-info mb-5 ms-4 mt-2">Sign Up</h3>
         <div className="row">
           <div className="col-lg col-12 ps-lg-5 px-1 ms-lg-3">
@@ -89,7 +99,9 @@ function SignUp() {
             ref={emailInputRef}
             required
           />
-          <div className="invalid-feedback">This email is already registered</div>
+          <div className="invalid-feedback">
+            This email is already registered
+          </div>
         </div>
         <div className=" mt-2 px-lg-5 px-1">
           <label className="form-label ">UserName</label>
@@ -101,7 +113,9 @@ function SignUp() {
             ref={userNameInputRef}
             required
           />
-          <div className="invalid-feedback">This username is already registered</div>
+          <div className="invalid-feedback">
+            This username is already registered
+          </div>
         </div>
         <div className=" mt-2 px-lg-5 px-1">
           <label className="form-label  ">Password</label>
@@ -111,23 +125,28 @@ function SignUp() {
             onChange={(e) => setPassword(e.target.value)}
             required
             ref={passwordInputRef}
-            
+            minLength={8}
+            maxLength={100}
           />
         </div>
         <div className=" mt-2 px-lg-5 px-1">
           <input
             type="checkbox"
-            className="input-control"
-            onChange={e=>{passwordInputRef.current.type=e.target.checked?"text":"password"}}
+            className="input-control form-check-input"
+            onChange={(e) => {
+              passwordInputRef.current.type = e.target.checked
+                ? "text"
+                : "password";
+            }}
             id="showPasswordInp"
           />
-          <label htmlFor="showPasswordInp" className="form-label ms-2 ">Show password</label>
+          <label htmlFor="showPasswordInp" className="form-label ms-2 ">
+            Show password
+          </label>
         </div>
-        <button
-          type="submit"
-          className=" btn btn-outline-info mt-4 ms-lg-5"
-        >
+        <button type="submit" className=" btn btn-outline-info mt-4 ms-lg-5">
           Sign Up
+          <i className="fa-solid fa-spinner fa-spin ms-2 d-none"></i>
         </button>
       </form>
     </Main>

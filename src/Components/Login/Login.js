@@ -7,6 +7,7 @@ import axios from "axios";
 
 import { useSelector } from "react-redux";
 import checkAllCookies from "../../CookiesHandler/checkAllCookies";
+import Swal from "sweetalert2";
 function Login() {
   const navigate = useNavigate();
 
@@ -22,12 +23,27 @@ function Login() {
   }, []);
   async function loginBtnHandler(e) {
     e.preventDefault();
-    const result = await axios.post(
-      `${backendOrigin}login`,
-      { userName: userName, password: password },
-      { withCredentials: true }
-    );
-    if (result.status == 200) navigate("/");
+    document.querySelector(".fa-spinner").classList.remove("d-none");
+
+    try {
+      const result = await axios.post(
+        `${backendOrigin}login`,
+        { userName: userName, password: password },
+        { withCredentials: true }
+      );
+      document.querySelector(".fa-spinner").classList.add("d-none");
+
+      if (result.data.success && result.data.emailConfirmed) navigate("/");
+      else {
+        localStorage.setItem("email", result.data.email);
+        navigate("/verification");
+      }
+    } catch (e) {
+      document.querySelector(".fa-spinner").classList.add("d-none");
+      userNameInputRef.current.classList.add("is-invalid");
+      passwordInputRef.current.classList.add("is-invalid");
+      Swal.fire({ title: "Invalid username or password", icon: "error" });
+    }
   }
   return (
     <Main>
@@ -60,7 +76,7 @@ function Login() {
         <div className=" mt-5">
           <input
             type="checkbox"
-            className="input-control"
+            className="input-control form-check-input"
             onChange={(e) => {
               passwordInputRef.current.type = e.target.checked
                 ? "text"
@@ -68,7 +84,9 @@ function Login() {
             }}
             id="showPasswordCheckbox"
           />
-          <label htmlFor="showPasswordCheckbox" className="form-label ms-2">Show Password</label>
+          <label htmlFor="showPasswordCheckbox" className="form-label ms-2">
+            Show Password
+          </label>
         </div>
 
         <button
@@ -76,6 +94,7 @@ function Login() {
           onClick={(e) => loginBtnHandler(e)}
         >
           Login
+          <i className="fa-solid fa-spinner fa-spin ms-2 d-none"></i>
         </button>
       </form>
     </Main>

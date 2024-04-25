@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import "./Home.css";
 import Main from "../Main/Main";
 import "./Home.Authenticated.css";
-import ResultSeachPeople from "../ResultSearch/ResultSeachPeople";
 import Messages from "../Messages/Messages";
 import MessagesHead from "../Messages/MessagesHead";
 import Friends from "../Friends/Friends";
