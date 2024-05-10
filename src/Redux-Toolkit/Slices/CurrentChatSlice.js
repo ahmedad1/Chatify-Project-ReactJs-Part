@@ -9,7 +9,10 @@ let CurrentChatSlice = createSlice({
     getCurrentChat: (state, action) => {
       return state?.payload.userName;
     },
+    clearCurrentChat:(state,action)=>{
+      return {};
+    }
   },
 });
 export default CurrentChatSlice.reducer;
-export const { setCurrentChat, getCurrentChat } = CurrentChatSlice.actions;
+export const { setCurrentChat, getCurrentChat,clearCurrentChat } = CurrentChatSlice.actions;

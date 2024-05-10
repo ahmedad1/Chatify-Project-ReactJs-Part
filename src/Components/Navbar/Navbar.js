@@ -1,14 +1,17 @@
 import React, { useEffect } from "react";
 import "./Navbar.css"
-import { Link,useNavigate,useParams } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import checkAllCookies from "../../CookiesHandler/checkAllCookies";
 import { useLocation } from "react-router-dom";
 import Cookies from "cookie-universal"
-import { useDispatch, useSelector } from "react-redux";
-import { setCurrentChat } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
+import { useDispatch } from "react-redux";
+import { clearCurrentChat, setCurrentChat } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { signOut } from "../../Redux-Toolkit/Slices/SignOutSlice";
+
+import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
+import tryActiveTokens from "../../HelperSharedMethods/tryActiveTokens";
 function Navbar(props) {
 const location=useLocation()
 useEffect(_=>{},[location.pathname=="/"])
@@ -43,20 +46,32 @@ var NotAuthenticated=(props)=>{
 var Authenticated=(props)=>{
    const cookies=Cookies()
    const dispatch=useDispatch()
-   const backendUrl=useSelector(x=>x.backendOrigin)
+   const backendUrl=BACKEND_BASEURL
    const navigate=useNavigate()
    async function signOutHandler(){
     document.querySelector(".fa-spinner").classList.remove("d-none")
     try{
-        await axios.delete(`${backendUrl}sign-out`,{withCredentials:true})
+        await axios.delete(`${backendUrl}api/Account/sign-out`,{withCredentials:true})
         navigate("/")
         dispatch(signOut())
-     
+        dispatch(clearCurrentChat())
     }
-    catch{
+    catch(e){
+        if(e.response.status==401){
+            const result=await tryActiveTokens();
+            if(!result){
+                cookies.removeAll()
+                navigate("/")
+                dispatch(signOut())
+                return ;
+            }
+            await signOutHandler()
+            
+        }else{
         document.querySelector(".fa-spinner").classList.add("d-none")
 
         Swal.fire("Something went wrong ... try again")
+        }
     }
     
    }

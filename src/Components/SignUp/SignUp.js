@@ -4,8 +4,8 @@ import "./SignUp.css";
 import checkAllCookies from "../../CookiesHandler/checkAllCookies";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
+import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
 function SignUp() {
   const navigate = useNavigate();
   let userNameInputRef = useRef();
@@ -17,7 +17,7 @@ function SignUp() {
   let [userName, setUserName] = useState("");
   let [password, setPassword] = useState("");
   let firstNameInputRef = useRef();
-  const backendUrl = useSelector((x) => x.backendOrigin);
+  const backendUrl = BACKEND_BASEURL
   useEffect((_) => {
     if (checkAllCookies()) navigate("/");
 
@@ -28,7 +28,7 @@ function SignUp() {
     let result;
     document.querySelector(".fa-spinner").classList.remove("d-none");
     try {
-      result = await axios.post(`${backendUrl}sign-up`, {
+      result = await axios.post(`${backendUrl}api/Account/sign-up`, {
         firstName: firstName,
         lastName: lastName,
         email: email,

@@ -1,3 +1,38 @@
 .subTitle{
 color: rgba(255,    255,    255, .3);
 }
+.nav-sidebar{
+    color: rgba(255, 255, 255, .8)!important;
+}
+
+.nav-sidebar:hover{
+
+    color: var(--bs-info)!important;
+
+}
+.parent-of-nav-sidebar{
+    position: relative;
+    cursor: pointer;
+    
+}
+.parent-of-nav-sidebar:hover a{
+  color :var(--bs-info)!important
+}
+.parent-of-nav-sidebar::before{
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: -10%;
+    height: 1px;
+    background-color: var(--bs-info);
+    
+
+}
+
+.display-parent::before{
+    width: 125% !important;
+}
+.hide-parent::before{
+    width: 0%;
+
+}

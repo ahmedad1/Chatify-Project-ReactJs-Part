@@ -5,18 +5,19 @@ import { useRef } from "react";
 import "./EmailVerification.css";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useSelector } from "react-redux";
+
+import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
 function EmailVerification(props) {
   const navigate = useNavigate();
-  const backendUrl = useSelector((x) => x.backendOrigin);
+  const backendUrl = BACKEND_BASEURL
   useEffect((_) => {
     (async function () {
       if (checkAllCookies() || !localStorage.getItem("email")) navigate("/");
       inputCodeRef.current.focus();
       try {
-        await axios.post(`${backendUrl}code/send`, {
+        await axios.post(`${backendUrl}api/Account/code/send`, {
           email: localStorage.getItem("email"),
-        });
+        },{withCredentials:true});
       } catch (e) {
         Swal.fire(
           "Failed to send the code or your email hasn't been registered yet"
@@ -51,10 +52,10 @@ function EmailVerification(props) {
   async function submitionHandler(e) {
     e.preventDefault();
     try {
-      await axios.post(`${backendUrl}code/verify`, {
+      await axios.post(`${backendUrl}api/Account/code/verify`, {
         email: localStorage.getItem("email"),
         code: code,
-      });
+      },{withCredentials:true});
       Swal.fire({title:"Confirmed Successfully",icon:"success"}).then((res) => {
         if (res.isConfirmed || res.isDismissed) {
           localStorage.removeItem("email");

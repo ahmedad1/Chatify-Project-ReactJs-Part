@@ -1,0 +1,22 @@
+.request{
+    background-color:rgba(255, 255, 255, .7) !important;
+    
+}
+.response-button{
+    cursor: pointer;
+    
+}
+
+@media(max-width:991px){
+.response-parent{
+    flex-direction: column;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+.request-info{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+}

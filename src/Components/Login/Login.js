@@ -4,10 +4,9 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Main from "../Main/Main";
 import axios from "axios";
-
-import { useSelector } from "react-redux";
 import checkAllCookies from "../../CookiesHandler/checkAllCookies";
 import Swal from "sweetalert2";
+import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
 function Login() {
   const navigate = useNavigate();
 
@@ -15,7 +14,7 @@ function Login() {
   let [password, setPassword] = useState("");
   let userNameInputRef = useRef();
   let passwordInputRef = useRef();
-  let backendOrigin = useSelector((s) => s.backendOrigin);
+  let backendOrigin = BACKEND_BASEURL
 
   useEffect((_) => {
     if (checkAllCookies()) navigate("/");
@@ -27,7 +26,7 @@ function Login() {
 
     try {
       const result = await axios.post(
-        `${backendOrigin}login`,
+        `${backendOrigin}api/Account/login`,
         { userName: userName, password: password },
         { withCredentials: true }
       );
