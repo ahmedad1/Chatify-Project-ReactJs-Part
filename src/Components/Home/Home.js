@@ -17,6 +17,10 @@ import sendRequestAuth from "../../HelperSharedMethods/SendRequestAuth";
 import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
 import tryActiveTokens from "../../HelperSharedMethods/tryActiveTokens";
 import FriendRequests from "../../FriendRequests/FriendRequests";
+import { Oval, Puff } from "react-loader-spinner";
+import { setHasFriendRequestsFlag } from "../../Redux-Toolkit/Slices/HasFriendRequestsSlice";
+import { removeRequest, setNewRequest } from "../../Redux-Toolkit/Slices/RequestsSlice";
+import { addFriends } from "../../Redux-Toolkit/Slices/FriendsSlice";
 function Home(props) {
   return (
     <>{checkAllCookies() ? <HomeAutenticated /> : <HomeNotAuthenticated />}</>
@@ -51,12 +55,22 @@ var HomeAutenticated = (props) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cookies = Cookies();
-  let parent1Ref=useRef()
-  let parent2Ref=useRef()
+  let parent1Ref = useRef();
+  let parent2Ref = useRef();
   const [conn, setConn] = useState(null);
+  const [searchSpinner, setSearchSpinner] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [newOnlineFriend, setNewOnlineFriend] = useState([]);
   const [resultOfSearch, setResultOfSearch] = useState([]);
+  let hasRequests=useSelector(x=>x.hasRequestsFlag)
+  let newRequestSignal=useSelector(x=>x.newRequestSignal)
   const [currentSection, setCurrentSection] = useState(false); //false : friends , true: friend-requests
+  let currentSectionRef=useRef(currentSection);
+  let searchedRef=useRef(searched)
+  useEffect(_=>{
+   currentSectionRef.current=currentSection
+   searchedRef.current=searched
+  })
   async function connectToSignalR() {
     const conn = new signalR.HubConnectionBuilder()
       .withUrl(`${backend}chat`, { withCredentials: true })
@@ -78,35 +92,65 @@ var HomeAutenticated = (props) => {
     }
   }
   useEffect((_) => {
-    connectToSignalR();
+    if(conn ===null)
+    connectToSignalR()
+    conn?.on("isActive", (userName, firstName, lastName) => {
+      if (userName != cookies.get("userName")) {
+        newOnlineFriend.push({
+          userName: userName,
+          firstName: firstName,
+          lastName: lastName,
+        });
+        setNewOnlineFriend(newOnlineFriend);
+      }
+    });
+    conn?.on("friendRequest",(userName,firstName,lastName)=>{
+      
+      dispatch(setNewRequest([{userName:userName,firstName:firstName,lastName:lastName}]))
+      if(!currentSectionRef.current){
+        dispatch(setHasFriendRequestsFlag(true))
+        
+      }
+  
+    })
+    conn?.on("friendRequestCancelled",(userName)=>{
+      dispatch(removeRequest(userName))
+      if(!currentSectionRef.current){
+        dispatch(setHasFriendRequestsFlag(false))
+
+      }
+    
+    })
+    conn?.on("requestAccepted",(userName,firstName,lastName,groupId)=>{
+      if(searchedRef.current){
+        let resultOfSearchInText=resultOfSearch.filter(x=>x.userName!=userName)
+        setResultOfSearch(resultOfSearchInText)
+      }
+      dispatch(addFriends([{
+        id:groupId,
+        users:[{userName:userName,firstName:firstName,lastName:lastName}]
+      }]))
+     
+    })
     return async function () {
       await conn?.stop();
     };
-  }, []);
+  }, [conn]);
 
-  conn?.on("isActive", (userName, firstName, lastName) => {
-    if (userName != cookies.get("userName")) {
-      newOnlineFriend.push({
-        userName: userName,
-        firstName: firstName,
-        lastName: lastName,
-      });
-      setNewOnlineFriend(newOnlineFriend);
-    }
-  });
+
   async function handleSearchButton(e, event) {
     if (!e.length) return;
     const pageKey = "search-people";
 
     sessionStorage.setItem(pageKey, 1);
-    document.querySelectorAll(".fa-spinner")[1].classList.remove("d-none");
+    setSearchSpinner(true);
     const response = await sendRequestAuth(
       `${backend}api/FriendRequest/people/${sessionStorage.getItem(
         pageKey
       )}?searchKey=${e}`,
       "get"
     );
-    document.querySelectorAll(".fa-spinner")[1].classList.add("d-none");
+    setSearchSpinner(false);
 
     if (response === false) {
       cookies.removeAll();
@@ -118,6 +162,7 @@ var HomeAutenticated = (props) => {
     } else {
       setResultOfSearch(response.data);
     }
+    setSearched(true);
     sessionStorage.setItem(pageKey, +sessionStorage.getItem(pageKey) + 1);
   }
   return (
@@ -141,7 +186,10 @@ var HomeAutenticated = (props) => {
                   className="form-control search "
                   placeholder="Search for New people"
                   onChange={(e) => {
-                    if (e.target.value.length == 0) setResultOfSearch([]);
+                    if (e.target.value.length <= 1 && searched) {
+                      setResultOfSearch([]);
+                      setSearched(false);
+                    }
                   }}
                   ref={searchRef}
                 />
@@ -153,7 +201,17 @@ var HomeAutenticated = (props) => {
                   }}
                 >
                   Search
-                  <i className="fa-solid fa-spinner fa-spin ms-2 fa-lg d-none"></i>
+                  <Oval
+                    wrapperClass={"ms-2 search-spinner"}
+                    secondaryColor="#000"
+                    visible={searchSpinner}
+                    height="18"
+                    width="18"
+                    color="#0dcaf0"
+                    ariaLabel="oval-loading"
+                    wrapperStyle={{}}
+                  />
+                  {/* <i className="fa-solid fa-spinner fa-spin ms-2 fa-lg d-none"></i> */}
                 </button>
               </div>
               <div className="mt-3 d-flex justify-content-around">
@@ -161,53 +219,52 @@ var HomeAutenticated = (props) => {
                   className="parent-of-nav-sidebar parent1 display-parent"
                   ref={parent1Ref}
                   onClick={(e) => {
-                   if(!parent1Ref.current.classList.contains("display-parent")){
-                    parent1Ref.current.classList.add("display-parent");
-                    parent2Ref.current.classList.remove("display-parent")
-                   }
+                    if (
+                      !parent1Ref.current.classList.contains("display-parent")
+                    ) {
+                      parent1Ref.current.classList.add("display-parent");
+                      parent2Ref.current.classList.remove("display-parent");
+                    }
                     setCurrentSection(false);
                   }}
                 >
                   <a className="text-decoration-none nav-sidebar">Friends</a>
                 </div>
                 <div
-                  className="parent-of-nav-sidebar parent2"
+                  className="parent-of-nav-sidebar parent2 d-flex flex-row-reverse justify-content-between"
                   ref={parent2Ref}
                   onClick={(e) => {
-                    if(!parent2Ref.current.classList.contains("display-parent"))
-                    parent2Ref.current.classList.add("display-parent");
-                    parent1Ref.current.classList.remove("display-parent")
+                    if (
+                      !parent2Ref.current.classList.contains("display-parent")
+                    )
+                      parent2Ref.current.classList.add("display-parent");
+                    parent1Ref.current.classList.remove("display-parent");
                     setCurrentSection(true);
+                    dispatch(setHasFriendRequestsFlag(false))
                   }}
                 >
                   <a className="text-decoration-none nav-sidebar">
                     Friend Requests
                   </a>
+                    <Puff
+                      visible={hasRequests}
+                      height="15"
+                      width="15"
+                      color="#e00"
+                      ariaLabel="puff-loading"
+                      wrapperStyle={{}}
+                      wrapperClass="me-1"
+                    />
                 </div>
               </div>
 
-              {resultOfSearch.length !== 0 ? (
+              {resultOfSearch.length !== 0 || searched ? (
                 <ResultSearchPeople people={resultOfSearch} />
               ) : !currentSection ? (
                 <Friends
                   messagesSection={messagesSectionRef}
                   peopleSection={peopleSectionRef}
                   onlineFriends={newOnlineFriend} //dynamic
-                  friends={[
-                    //dynamic
-                    {
-                      groupId: "aaaa",
-                      firstName: "Samy",
-                      lastName: "Omar",
-                      userName: "SamySY0",
-                    },
-                    {
-                      groupId: "wwww",
-                      firstName: "Mohamed",
-                      lastName: "Omar",
-                      userName: "mohamedmd0",
-                    },
-                  ]}
                 />
               ) : (
                 <FriendRequests />

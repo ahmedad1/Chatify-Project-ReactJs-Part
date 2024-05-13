@@ -3,7 +3,7 @@ import tryActiveTokens from "./tryActiveTokens";
 
 async function sendRequestAuth(url, method, body = null) {
   let configs =
-    method.toLowerCase() === "get"
+    method?.toLowerCase() === "get"
       ? {
           method: method,
           url: url,
@@ -23,7 +23,7 @@ async function sendRequestAuth(url, method, body = null) {
     if (e.response?.status === 401) {
       const res = await tryActiveTokens();
       if (res) 
-        return await sendRequestAuth();
+        return await sendRequestAuth(url, method, body);
       else {
         return false;
       }

@@ -22,7 +22,7 @@ color: rgba(255,    255,    255, .3);
     content: "";
     position: absolute;
     bottom: -10px;
-    left: -10%;
+    left: -8%;
     height: 1px;
     background-color: var(--bs-info);
     
