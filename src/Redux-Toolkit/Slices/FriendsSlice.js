@@ -12,9 +12,12 @@ let FriendsSlice=createSlice({
         setHasOriginalFriendRequestsFlag:(state,action)=>{
             state.hasFriendRequests=action.payload
             return state
+        },
+        clearFriends:(state,action)=>{
+            return {groups:[], hasFriendRequests: false}
         }
     }
 
 })
 export default FriendsSlice.reducer;
-export const{addFriends,setHasOriginalFriendRequestsFlag} = FriendsSlice.actions
+export const{addFriends,setHasOriginalFriendRequestsFlag,clearFriends} = FriendsSlice.actions

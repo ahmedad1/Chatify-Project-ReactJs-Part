@@ -13,7 +13,7 @@ async function tryActiveTokens() {
   } catch (e) {
     if (e.response.status == 401) {
       cookies.removeAll();
-
+      
       return false;
     }
   }

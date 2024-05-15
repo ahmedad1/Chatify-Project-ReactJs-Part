@@ -6,8 +6,11 @@ const HasFriendRequestsSlice=createSlice({
     reducers:{
         setHasFriendRequestsFlag:(state,action)=>{
             return action.payload;
+        },
+        clearHasFriendRequests:(state,action)=>{
+            return false
         }
     }
 })
 export default HasFriendRequestsSlice.reducer
-export const{setHasFriendRequestsFlag}=HasFriendRequestsSlice.actions
+export const{setHasFriendRequestsFlag,clearHasFriendRequests}=HasFriendRequestsSlice.actions

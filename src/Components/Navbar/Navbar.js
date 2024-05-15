@@ -12,6 +12,11 @@ import { signOut } from "../../Redux-Toolkit/Slices/SignOutSlice";
 
 import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
 import tryActiveTokens from "../../HelperSharedMethods/tryActiveTokens";
+import { clearRequests } from "../../Redux-Toolkit/Slices/RequestsSlice";
+import { clearOnlineFriends } from "../../Redux-Toolkit/Slices/OnlineFriendsSlice";
+import { clearHasFriendRequests } from "../../Redux-Toolkit/Slices/HasFriendRequestsSlice";
+import { clearFriends } from "../../Redux-Toolkit/Slices/FriendsSlice";
+import { ClearMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
 function Navbar(props) {
 const location=useLocation()
 useEffect(_=>{},[location.pathname=="/"])
@@ -54,7 +59,13 @@ var Authenticated=(props)=>{
         await axios.delete(`${backendUrl}api/Account/sign-out`,{withCredentials:true})
         navigate("/")
         dispatch(signOut())
-        dispatch(clearCurrentChat())
+        dispatch(clearRequests());
+        dispatch(clearOnlineFriends());
+        dispatch(clearHasFriendRequests());
+        dispatch(clearFriends());
+        dispatch(clearCurrentChat());
+        dispatch(ClearMessages())
+
     }
     catch(e){
         if(e.response.status==401){

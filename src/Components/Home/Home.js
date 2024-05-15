@@ -21,6 +21,8 @@ import { Oval, Puff } from "react-loader-spinner";
 import { setHasFriendRequestsFlag } from "../../Redux-Toolkit/Slices/HasFriendRequestsSlice";
 import { removeRequest, setNewRequest } from "../../Redux-Toolkit/Slices/RequestsSlice";
 import { addFriends } from "../../Redux-Toolkit/Slices/FriendsSlice";
+import { addOnlineFriends, removeOnlineFriend } from "../../Redux-Toolkit/Slices/OnlineFriendsSlice";
+import { AddMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
 function Home(props) {
   return (
     <>{checkAllCookies() ? <HomeAutenticated /> : <HomeNotAuthenticated />}</>
@@ -60,16 +62,18 @@ var HomeAutenticated = (props) => {
   const [conn, setConn] = useState(null);
   const [searchSpinner, setSearchSpinner] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [newOnlineFriend, setNewOnlineFriend] = useState([]);
   const [resultOfSearch, setResultOfSearch] = useState([]);
   let hasRequests=useSelector(x=>x.hasRequestsFlag)
   let newRequestSignal=useSelector(x=>x.newRequestSignal)
+  let currentChat=useSelector(x=>x.currentChat)
+  let currentChatRef=useRef(currentChat)
   const [currentSection, setCurrentSection] = useState(false); //false : friends , true: friend-requests
   let currentSectionRef=useRef(currentSection);
   let searchedRef=useRef(searched)
   useEffect(_=>{
    currentSectionRef.current=currentSection
    searchedRef.current=searched
+   currentChatRef.current=currentChat
   })
   async function connectToSignalR() {
     const conn = new signalR.HubConnectionBuilder()
@@ -94,16 +98,17 @@ var HomeAutenticated = (props) => {
   useEffect((_) => {
     if(conn ===null)
     connectToSignalR()
-    conn?.on("isActive", (userName, firstName, lastName) => {
+    conn?.on("newOneActive", (userName, firstName, lastName) => {
       if (userName != cookies.get("userName")) {
-        newOnlineFriend.push({
-          userName: userName,
-          firstName: firstName,
-          lastName: lastName,
-        });
-        setNewOnlineFriend(newOnlineFriend);
+      dispatch(addOnlineFriends([userName]))
       }
     });
+    conn?.on("allActiveUsers",(userNames)=>{
+      dispatch(addOnlineFriends(userNames))
+    })
+    conn?.on("isNotActive",(userName)=>{
+      dispatch(removeOnlineFriend(userName))
+    })
     conn?.on("friendRequest",(userName,firstName,lastName)=>{
       
       dispatch(setNewRequest([{userName:userName,firstName:firstName,lastName:lastName}]))
@@ -131,6 +136,12 @@ var HomeAutenticated = (props) => {
         users:[{userName:userName,firstName:firstName,lastName:lastName}]
       }]))
      
+    })
+    conn?.on("newMessage",(userName,message,groupId,id)=>{
+   
+      if(currentChatRef.current.groupId==groupId)
+      dispatch(AddMessages([{id:id,message:message,userName:userName,groupId:groupId}]))
+    
     })
     return async function () {
       await conn?.stop();
@@ -175,7 +186,7 @@ var HomeAutenticated = (props) => {
               messagesSection={messagesSectionRef}
               peopleSection={peopleSectionRef}
             />
-            <Messages messages={[{ id: 1, sender: "You", content: "hi" }]} />
+            <Messages conn={conn}/>
           </div>
           <div className="col-lg-4 col-12" ref={peopleSectionRef}>
             <h3 className="text-info bg-glass p-3 rounded px-4">People </h3>
@@ -264,7 +275,6 @@ var HomeAutenticated = (props) => {
                 <Friends
                   messagesSection={messagesSectionRef}
                   peopleSection={peopleSectionRef}
-                  onlineFriends={newOnlineFriend} //dynamic
                 />
               ) : (
                 <FriendRequests />

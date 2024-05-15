@@ -9,7 +9,10 @@ body {
   
 }
 
-
+*{
+  scrollbar-width: thin;
+ 
+}
 .bg-glass{
   background-color: rgba(255,255,255,.1) !important;
 }

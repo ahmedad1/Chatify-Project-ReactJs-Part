@@ -12,11 +12,12 @@ import {
   addFriends,
   setHasOriginalFriendRequestsFlag,
 } from "../../Redux-Toolkit/Slices/FriendsSlice";
-import { ThreeDots } from "react-loader-spinner";
+import { Puff, ThreeDots } from "react-loader-spinner";
 
 function Friends(props) {
   const [hasEnabledLoader, setHasEnabledLoader] = useState(false);
   const dispatch = useDispatch();
+  let onlineFriends = useSelector((x) => x.onlineFriends);
 
   const navigate = useNavigate();
   let FriendsSelector = useSelector((x) => x.Friends);
@@ -31,11 +32,12 @@ function Friends(props) {
         firstName: obj.users[0].firstName,
         lastName: obj.users[0].lastName,
         userName: obj.users[0].userName,
+        groupId:obj.id
       })
     );
   }
   useEffect((_) => {
-    if (FriendsSelector.groups.length == 0){
+    if (FriendsSelector.groups.length == 0) {
       setHasEnabledLoader(true);
       sendRequestAuth(`${BACKEND_BASEURL}api/Chat/groups`, "get").then(
         (res) => {
@@ -52,11 +54,10 @@ function Friends(props) {
             );
             dispatch(setHasFriendRequestsFlag(res.data.hasFriendRequests));
           }
-          setHasEnabledLoader(false)
+          setHasEnabledLoader(false);
         }
       );
-    }
-    else {
+    } else {
       dispatch(setHasFriendRequestsFlag(FriendsSelector.hasFriendRequests));
     }
   }, []);
@@ -77,12 +78,19 @@ function Friends(props) {
             <span>
               {f.users[0].firstName} {f.users[0].lastName}{" "}
             </span>
-            -<small> @{f.users[0].userName}</small>
-            {props.onlineFriends?.some((x) => x.userName == f.userName) && (
-              <i class="fa-solid fa-circle" style="color: #04ff00;"></i>
-            )}
+            -<small> 
+              @{f.users[0].userName}
+            </small>
+            {/* <span className="ms-1 text-danger"style={{fontSize:"1.1em"}}>(2)</span> */}
+            {/* {onlineFriends.some((x) => x.userName == f.userName) && ( */}
+            {/*)}*/}
           </small>
         </span>
+        {onlineFriends.some((e) => e === f.users[0].userName) && (
+          <span className="text-success ms-2 fw-bold">
+            Active
+          </span>
+        )}
       </li>
     );
   });
