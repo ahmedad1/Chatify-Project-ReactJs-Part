@@ -6,6 +6,10 @@ let CurrentChatSlice = createSlice({
     setCurrentChat: (state, action) => {
       return action.payload;
     },
+    setIsTypingFlag:(state,action)=>{
+      state.isTyping=action.payload
+      return state
+    },
     getCurrentChat: (state, action) => {
       return state?.payload.userName;
     },
@@ -15,4 +19,4 @@ let CurrentChatSlice = createSlice({
   },
 });
 export default CurrentChatSlice.reducer;
-export const { setCurrentChat, getCurrentChat,clearCurrentChat } = CurrentChatSlice.actions;
+export const { setCurrentChat, getCurrentChat,clearCurrentChat,setIsTypingFlag } = CurrentChatSlice.actions;

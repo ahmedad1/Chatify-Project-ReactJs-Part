@@ -5,6 +5,7 @@ import { clearOnlineFriends } from "../Redux-Toolkit/Slices/OnlineFriendsSlice"
 import { clearHasFriendRequests } from "../Redux-Toolkit/Slices/HasFriendRequestsSlice"
 import { clearFriends } from "../Redux-Toolkit/Slices/FriendsSlice"
 import { ClearMessages } from "../Redux-Toolkit/Slices/MessagesSlice"
+import { ClearResultOfSearch } from "../Redux-Toolkit/Slices/SearchSlice"
 
 function AlertSessionEnded(navigate,dispatch,signOut){
     Swal.fire({title:"Your session has been ended",icon:"warning"}).then(res=>{
@@ -17,6 +18,7 @@ function AlertSessionEnded(navigate,dispatch,signOut){
           dispatch(clearFriends())
           dispatch(clearCurrentChat())
           dispatch(ClearMessages())
+          dispatch(ClearResultOfSearch())
           
         }
       })

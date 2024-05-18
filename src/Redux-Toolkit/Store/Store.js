@@ -7,6 +7,7 @@ import RequestsReducer from "../Slices/RequestsSlice"
 import FriendsReducer from "../Slices/FriendsSlice"
 import OnlineFriendsReducer from "../Slices/OnlineFriendsSlice"
 import MessagesReducer from "../Slices/MessagesSlice"
+import SearchReducer from "../Slices/SearchSlice"
 
 let store=configureStore({
     reducer:{
@@ -17,7 +18,8 @@ let store=configureStore({
         Requests:RequestsReducer,
         Friends:FriendsReducer,
         onlineFriends:OnlineFriendsReducer,
-        messages:MessagesReducer
+        messages:MessagesReducer,
+        searchResult:SearchReducer
     }
 })
 export default store

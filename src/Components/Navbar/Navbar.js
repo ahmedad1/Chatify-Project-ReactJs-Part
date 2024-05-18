@@ -17,6 +17,7 @@ import { clearOnlineFriends } from "../../Redux-Toolkit/Slices/OnlineFriendsSlic
 import { clearHasFriendRequests } from "../../Redux-Toolkit/Slices/HasFriendRequestsSlice";
 import { clearFriends } from "../../Redux-Toolkit/Slices/FriendsSlice";
 import { ClearMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
+import { ClearResultOfSearch } from "../../Redux-Toolkit/Slices/SearchSlice";
 function Navbar(props) {
 const location=useLocation()
 useEffect(_=>{},[location.pathname=="/"])
@@ -65,6 +66,7 @@ var Authenticated=(props)=>{
         dispatch(clearFriends());
         dispatch(clearCurrentChat());
         dispatch(ClearMessages())
+        dispatch(ClearResultOfSearch())
 
     }
     catch(e){

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
 import sendRequestAuth from "../../HelperSharedMethods/SendRequestAuth";
@@ -14,6 +14,7 @@ function Messages(props) {
   const cookies = Cookies();
   let messageTextRef = useRef();
   let messagesTextsParentRef = useRef();
+  const [isTyping,setIsTyping]=useState(false);// for the current user who Authenticated
   const navigate = useNavigate();
   let dispatch = useDispatch();
   useEffect(
@@ -47,6 +48,7 @@ function Messages(props) {
   // }
   function handleSendMessage() {
     if (!messageTextRef.current?.value.length) return;
+    if (!currentChat.groupId) return;
     props.conn?.invoke(
       "SendMessage",
       messageTextRef.current.value,
@@ -62,6 +64,9 @@ function Messages(props) {
         },
       ])
     );
+    messageTextRef.current.value=''
+    if(isTyping)
+    setIsTyping(false)
   }
   let messagesJSX = messages.map((m) => {
     return (
@@ -72,11 +77,22 @@ function Messages(props) {
             : currentChat.firstName}{" "}
           :
         </span>{" "}
-        <span style={{overflowWrap:"break-word"}}>{m.message}</span>
+        <span style={{ overflowWrap: "break-word" }}>{m.message}</span>
       </li>
     );
   });
-
+  function handleAlertTyping() {
+    if (!currentChat.groupId) return;
+    if(isTyping==true)
+      return
+    props.conn?.invoke("TypingAlert", currentChat.groupId);
+    setIsTyping(true)
+    let timeOut=setTimeout(_=>{
+      setIsTyping(false)
+    },1000)
+   
+    
+  }
   return (
     <div
       style={{ overflowY: "auto" }}
@@ -95,6 +111,10 @@ function Messages(props) {
           className="form-control message-text "
           placeholder="type a message"
           ref={messageTextRef}
+          onChange={(e) => {
+            handleAlertTyping(e);
+          }}
+          onKeyDown={e=>{if(e.key=="Enter")handleSendMessage()}}
         />
         <input
           onClick={async (e) => {

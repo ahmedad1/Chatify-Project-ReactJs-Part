@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setCurrentChat } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
+import { clearCurrentChat, setCurrentChat } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
 import { useEffect, useState } from "react";
 import sendRequestAuth from "../../HelperSharedMethods/SendRequestAuth";
 import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
@@ -13,9 +13,11 @@ import {
   setHasOriginalFriendRequestsFlag,
 } from "../../Redux-Toolkit/Slices/FriendsSlice";
 import { Puff, ThreeDots } from "react-loader-spinner";
+import { ClearMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
 
 function Friends(props) {
   const [hasEnabledLoader, setHasEnabledLoader] = useState(false);
+  const currentChat=useSelector(x=>x.currentChat)
   const dispatch = useDispatch();
   let onlineFriends = useSelector((x) => x.onlineFriends);
 
@@ -27,6 +29,9 @@ function Friends(props) {
       props.messagesSection.current.classList.remove("d-none");
       props.peopleSection.current.classList.add("d-none");
     }
+    if(currentChat.groupId===obj.id)
+      return
+    dispatch(ClearMessages())
     dispatch(
       setCurrentChat({
         firstName: obj.users[0].firstName,

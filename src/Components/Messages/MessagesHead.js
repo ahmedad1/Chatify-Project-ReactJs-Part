@@ -1,29 +1,48 @@
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setIsTypingFlag } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
 function MessagesHead(props) {
-  const selector = useSelector((x) => x.currentChat);
+  const currentChat = useSelector((x) => x.currentChat);
+  let currentChatRef=useRef(currentChat)
+  const dispatch=useDispatch()
   let mediaQuery = matchMedia("(min-width:992px)");
+  useEffect(_=>{
+    currentChatRef.current=currentChat
+  
+  })
  useEffect(_=>{
-  if(!mediaQuery.matches&&Object.keys(selector).length==0){
+  if(!mediaQuery.matches&&Object.keys(currentChat).length==0){
    
     props.messagesSection.current.classList.add("d-none")
     props.peopleSection.current.classList.remove("d-none")
-
- 
  }
- },[selector])
+ props.conn?.on("isTyping",(userName)=>{
+  let timeOut
+      if(currentChatRef.current.userName==userName){
+        if(currentChatRef.current.isTyping){return}
+        dispatch(setIsTypingFlag(true))
+        timeOut=setTimeout(_=>{
+          dispatch(setIsTypingFlag(false))
+        },1000)
+      }
+   return function(){
+    if(timeOut)
+      clearTimeout(timeOut)
+   }   
+ })
+ },[currentChat])
  
   return (
     <>
-      {selector.userName ? (
+      {currentChat.userName ? (
         <h3
           className={`text-info ${
             mediaQuery.matches ? "text-left" : "text-center"
           } bg-glass p-3 rounded px-4`}
         >
           Messages:{" "}
-          {`${selector.firstName} ${selector.lastName} - @${selector.userName}`}{" "}
-          {selector.isTyping ? (
+          {`${currentChat.firstName} ${currentChat.lastName} - @${currentChat.userName}`}{" "}
+          {currentChat.isTyping ? (
             <span className="text-info ">is typing....</span> /*redux context */
           ) : null}
         </h3>

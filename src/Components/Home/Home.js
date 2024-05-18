@@ -23,6 +23,8 @@ import { removeRequest, setNewRequest } from "../../Redux-Toolkit/Slices/Request
 import { addFriends } from "../../Redux-Toolkit/Slices/FriendsSlice";
 import { addOnlineFriends, removeOnlineFriend } from "../../Redux-Toolkit/Slices/OnlineFriendsSlice";
 import { AddMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
+import { setIsTypingFlag } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
+import { ClearResultOfSearch, removeFromResultOfSearch, setGotRequestFlagOfSearch, setResultOfSearch } from "../../Redux-Toolkit/Slices/SearchSlice";
 function Home(props) {
   return (
     <>{checkAllCookies() ? <HomeAutenticated /> : <HomeNotAuthenticated />}</>
@@ -62,7 +64,9 @@ var HomeAutenticated = (props) => {
   const [conn, setConn] = useState(null);
   const [searchSpinner, setSearchSpinner] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [resultOfSearch, setResultOfSearch] = useState([]);
+
+  // const [resultOfSearch, setResultOfSearch] = useState([]);
+  // let resultOfSearchRef=useRef(resultOfSearch)
   let hasRequests=useSelector(x=>x.hasRequestsFlag)
   let newRequestSignal=useSelector(x=>x.newRequestSignal)
   let currentChat=useSelector(x=>x.currentChat)
@@ -74,6 +78,7 @@ var HomeAutenticated = (props) => {
    currentSectionRef.current=currentSection
    searchedRef.current=searched
    currentChatRef.current=currentChat
+  //  resultOfSearchRef.current=resultOfSearch
   })
   async function connectToSignalR() {
     const conn = new signalR.HubConnectionBuilder()
@@ -124,12 +129,11 @@ var HomeAutenticated = (props) => {
         dispatch(setHasFriendRequestsFlag(false))
 
       }
-    
     })
     conn?.on("requestAccepted",(userName,firstName,lastName,groupId)=>{
       if(searchedRef.current){
-        let resultOfSearchInText=resultOfSearch.filter(x=>x.userName!=userName)
-        setResultOfSearch(resultOfSearchInText)
+        
+        dispatch(removeFromResultOfSearch(userName))
       }
       dispatch(addFriends([{
         id:groupId,
@@ -137,11 +141,20 @@ var HomeAutenticated = (props) => {
       }]))
      
     })
+    conn?.on("requestRejected",(userName)=>{
+      
+      if(searchedRef.current){
+       
+        dispatch(setGotRequestFlagOfSearch({userName:userName,gotRequest:false}))
+       }
+    })
+ 
     conn?.on("newMessage",(userName,message,groupId,id)=>{
    
-      if(currentChatRef.current.groupId==groupId)
+      if(currentChatRef.current.groupId==groupId){
+      dispatch(setIsTypingFlag(false))
       dispatch(AddMessages([{id:id,message:message,userName:userName,groupId:groupId}]))
-    
+      }
     })
     return async function () {
       await conn?.stop();
@@ -171,7 +184,8 @@ var HomeAutenticated = (props) => {
     } else if (response.status != 200) {
       Swal.fire({ title: "Something went wrong ... try again", icon: "error" });
     } else {
-      setResultOfSearch(response.data);
+      // setResultOfSearch(response.data);
+      dispatch(setResultOfSearch(response.data))
     }
     setSearched(true);
     sessionStorage.setItem(pageKey, +sessionStorage.getItem(pageKey) + 1);
@@ -185,6 +199,7 @@ var HomeAutenticated = (props) => {
             <MessagesHead
               messagesSection={messagesSectionRef}
               peopleSection={peopleSectionRef}
+              conn={conn}
             />
             <Messages conn={conn}/>
           </div>
@@ -198,7 +213,7 @@ var HomeAutenticated = (props) => {
                   placeholder="Search for New people"
                   onChange={(e) => {
                     if (e.target.value.length <= 1 && searched) {
-                      setResultOfSearch([]);
+                      dispatch(ClearResultOfSearch())
                       setSearched(false);
                     }
                   }}
@@ -269,8 +284,8 @@ var HomeAutenticated = (props) => {
                 </div>
               </div>
 
-              {resultOfSearch.length !== 0 || searched ? (
-                <ResultSearchPeople people={resultOfSearch} />
+              { searched ? (
+                <ResultSearchPeople  />
               ) : !currentSection ? (
                 <Friends
                   messagesSection={messagesSectionRef}

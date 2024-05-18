@@ -9,15 +9,19 @@ import Swal from "sweetalert2";
 import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
 function EmailVerification(props) {
   const navigate = useNavigate();
-  const backendUrl = BACKEND_BASEURL
+  const backendUrl = BACKEND_BASEURL;
   useEffect((_) => {
     (async function () {
       if (checkAllCookies() || !localStorage.getItem("email")) navigate("/");
       inputCodeRef.current.focus();
       try {
-        await axios.post(`${backendUrl}api/Account/code/send`, {
-          email: localStorage.getItem("email"),
-        },{withCredentials:true});
+        await axios.post(
+          `${backendUrl}api/Account/code/send`,
+          {
+            email: localStorage.getItem("email"),
+          },
+          { withCredentials: true }
+        );
       } catch (e) {
         Swal.fire(
           "Failed to send the code or your email hasn't been registered yet"
@@ -28,7 +32,7 @@ function EmailVerification(props) {
     })();
   }, []);
   let inputCodeRef = useRef();
-  let [code, setCode] = useState(0);
+
   function onKeyDownHandler(e) {
     if (
       !/[0-9]+/gi.test(e.key) &&
@@ -40,28 +44,38 @@ function EmailVerification(props) {
       e.preventDefault();
       return;
     }
-    setCode(e.target.value);
   }
-  function onPasteHandler(e) {
-    if (isNaN((e.clipboardData || window.clipboardData).getData("text"))) {
+  async function onPasteHandler(e) {
+    if (
+      isNaN(await (e.clipboardData || window.clipboardData).getData("text"))
+    ) {
       e.preventDefault();
       return;
     }
-    setCode(e.target.value);
   }
+
   async function submitionHandler(e) {
     e.preventDefault();
+    if (isNaN(inputCodeRef.current.value)) {
+      return;
+    }
     try {
-      await axios.post(`${backendUrl}api/Account/code/verify`, {
-        email: localStorage.getItem("email"),
-        code: code,
-      },{withCredentials:true});
-      Swal.fire({title:"Confirmed Successfully",icon:"success"}).then((res) => {
-        if (res.isConfirmed || res.isDismissed) {
-          localStorage.removeItem("email");
-          navigate("/login");
+      await axios.post(
+        `${backendUrl}api/Account/code/verify`,
+        {
+          email: localStorage.getItem("email"),
+          code: inputCodeRef.current.value,
+        },
+        { withCredentials: true }
+      );
+      Swal.fire({ title: "Confirmed Successfully", icon: "success" }).then(
+        (res) => {
+          if (res.isConfirmed || res.isDismissed) {
+            localStorage.removeItem("email");
+            navigate("/login");
+          }
         }
-      });
+      );
     } catch {
       inputCodeRef.current.classList.add("is-invalid");
     }
@@ -82,8 +96,8 @@ function EmailVerification(props) {
             onKeyDown={(e) => {
               onKeyDownHandler(e);
             }}
-            onPaste={(e) => {
-              onPasteHandler(e);
+            onPaste={async (e) => {
+              await onPasteHandler(e);
             }}
             className="form-control bg-glass rm-border input-text "
             type="text"

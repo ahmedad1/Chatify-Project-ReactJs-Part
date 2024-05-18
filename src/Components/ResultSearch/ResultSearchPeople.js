@@ -1,22 +1,26 @@
 import { useRef } from "react";
 import sendRequestAuth from "../../HelperSharedMethods/SendRequestAuth";
 import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { signOut } from "../../Redux-Toolkit/Slices/SignOutSlice";
 import { useNavigate } from "react-router-dom";
 import AlertSessionEnded from "../../HelperSharedMethods/AlertSessionEnded";
 import FriendRequests from "../../FriendRequests/FriendRequests";
+import { setGotRequestFlagOfSearch } from "../../Redux-Toolkit/Slices/SearchSlice";
 
 function ResultSearchPeople(props) {
-  let requestSpan = useRef();
+  let resultOfSearch=useSelector(x=>x.searchResult)
   const dispatch = useDispatch();
+
   const navigate = useNavigate();
   async function sendRequestHandler(e) {
-    const method = requestSpan.current.innerText == "+" ? "post" : "delete";
-    requestSpan.current.innerText =
-      requestSpan.current.innerText === "+" ? "Sending..." : "Canceling...";
-    const result = await sendRequestAuth(
+    const requestSpan=document.getElementById(e.target.classList[0])
+    const method = requestSpan.innerText == "+" ? "post" : "delete";
+    requestSpan.innerText =
+      requestSpan.innerText === "+" ? "Sending..." : "Canceling...";
+   
+      const result = await sendRequestAuth(
       `${BACKEND_BASEURL}api/FriendRequest`,
       method,
       {
@@ -29,14 +33,19 @@ function ResultSearchPeople(props) {
       return;
     } else if (result.status != 200) {
       Swal.fire("Something went wrong");
-      requestSpan.current.innerText =
-        requestSpan.current.innerText == "Sending..." ? "+" : "Sent ✔";
+      requestSpan.innerText =
+        requestSpan.innerText == "Sending..." ? "+" : "Sent ✔";
       return;
     }
-    requestSpan.current.innerText =
-      requestSpan.current.innerText == "Sending..." ? "Sent ✔" : "+";
+    requestSpan.innerText =
+      requestSpan.innerText == "Sending..." ? "Sent ✔" : "+";
+    for(let i in resultOfSearch){
+      if(resultOfSearch[i].userName==e.target.classList[0])
+      dispatch(setGotRequestFlagOfSearch({userName:resultOfSearch[i].userName, gotRequest:true}))
+      
+    }
   }
-  const peopleJsx = props.people?.map((p) => {
+  const peopleJsx = resultOfSearch.map((p) => {
     return p.sentRequest==true ? (
       <FriendRequests key={p.userName} renderProps={[p]} />
     ) : (
@@ -54,7 +63,7 @@ function ResultSearchPeople(props) {
           </span>
         </span>
 
-        <span ref={requestSpan}>{p.gotRequest ? "Sent ✔" : "+"}</span>
+        <span id={p.userName}>{p.gotRequest ? "Sent ✔" : "+"}</span>
       </li>
     );
   });
