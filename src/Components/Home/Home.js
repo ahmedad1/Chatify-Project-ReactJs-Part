@@ -20,9 +20,9 @@ import FriendRequests from "../../FriendRequests/FriendRequests";
 import { Oval, Puff } from "react-loader-spinner";
 import { setHasFriendRequestsFlag } from "../../Redux-Toolkit/Slices/HasFriendRequestsSlice";
 import { removeRequest, setNewRequest } from "../../Redux-Toolkit/Slices/RequestsSlice";
-import { addFriends } from "../../Redux-Toolkit/Slices/FriendsSlice";
+import { addFriends, setHasUnreadMessagesFlag } from "../../Redux-Toolkit/Slices/FriendsSlice";
 import { addOnlineFriends, removeOnlineFriend } from "../../Redux-Toolkit/Slices/OnlineFriendsSlice";
-import { AddMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
+import { AddMessages, MakeMessagesOfGroupRead } from "../../Redux-Toolkit/Slices/MessagesSlice";
 import { setIsTypingFlag } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
 import { ClearResultOfSearch, removeFromResultOfSearch, setGotRequestFlagOfSearch, setResultOfSearch } from "../../Redux-Toolkit/Slices/SearchSlice";
 function Home(props) {
@@ -149,11 +149,15 @@ var HomeAutenticated = (props) => {
        }
     })
  
-    conn?.on("newMessage",(userName,message,groupId,id)=>{
+    conn?.on("newMessage",(userName,message,groupId,messageid)=>{
    
       if(currentChatRef.current.groupId==groupId){
       dispatch(setIsTypingFlag(false))
-      dispatch(AddMessages([{id:id,message:message,userName:userName,groupId:groupId}]))
+      conn.invoke("MakeMessagesRead",groupId)
+      dispatch(AddMessages([{id:messageid,message:message,userName:userName,groupId:groupId,isRead:true}]))
+
+      }else{
+        dispatch(setHasUnreadMessagesFlag({groupId:groupId,isRead:false}))
       }
     })
     return async function () {
@@ -288,6 +292,7 @@ var HomeAutenticated = (props) => {
                 <ResultSearchPeople  />
               ) : !currentSection ? (
                 <Friends
+                  conn={conn}
                   messagesSection={messagesSectionRef}
                   peopleSection={peopleSectionRef}
                 />

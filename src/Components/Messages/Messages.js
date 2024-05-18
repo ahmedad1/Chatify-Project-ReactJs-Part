@@ -54,6 +54,7 @@ function Messages(props) {
       messageTextRef.current.value,
       currentChat.groupId
     );
+    
     //userName represents the sender's userName here:
     dispatch(
       AddMessages([

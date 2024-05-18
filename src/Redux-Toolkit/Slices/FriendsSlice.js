@@ -9,6 +9,9 @@ let FriendsSlice=createSlice({
             state.groups.push(...action.payload)
             
         },
+        setHasUnreadMessagesFlag:(state, action)=>{
+            state.groups.map(x=>{if(x.id==action.payload.groupId){x.isRead=action.payload.isRead}return x})
+        },
         setHasOriginalFriendRequestsFlag:(state,action)=>{
             state.hasFriendRequests=action.payload
             return state
@@ -20,4 +23,4 @@ let FriendsSlice=createSlice({
 
 })
 export default FriendsSlice.reducer;
-export const{addFriends,setHasOriginalFriendRequestsFlag,clearFriends} = FriendsSlice.actions
+export const{addFriends,setHasUnreadMessagesFlag,setHasOriginalFriendRequestsFlag,clearFriends} = FriendsSlice.actions

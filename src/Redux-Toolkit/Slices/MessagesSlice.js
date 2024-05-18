@@ -7,6 +7,7 @@ reducers:{
     AddMessages:(state,action)=>{
         return [...state,...action.payload]
     },
+  
     ClearMessages:(state,action)=>{
         return []
     }

@@ -11,6 +11,7 @@ import { setHasFriendRequestsFlag } from "../../Redux-Toolkit/Slices/HasFriendRe
 import {
   addFriends,
   setHasOriginalFriendRequestsFlag,
+  setHasUnreadMessagesFlag,
 } from "../../Redux-Toolkit/Slices/FriendsSlice";
 import { Puff, ThreeDots } from "react-loader-spinner";
 import { ClearMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
@@ -18,6 +19,7 @@ import { ClearMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
 function Friends(props) {
   const [hasEnabledLoader, setHasEnabledLoader] = useState(false);
   const currentChat=useSelector(x=>x.currentChat)
+  const messages=useSelector(x=>x.messages)
   const dispatch = useDispatch();
   let onlineFriends = useSelector((x) => x.onlineFriends);
 
@@ -40,6 +42,9 @@ function Friends(props) {
         groupId:obj.id
       })
     );
+    props.conn?.invoke("MakeMessagesRead",obj.id)
+    dispatch(setHasUnreadMessagesFlag({groupId:obj.id,isRead:true}))
+    
   }
   useEffect((_) => {
     if (FriendsSelector.groups.length == 0) {
@@ -77,7 +82,8 @@ function Friends(props) {
           showMessagesHandler(f);
         }}
       >
-        <span className="text-center">
+        <span className="text-center"style={{position:"relative"}}>
+        <span style={{position:"absolute",top:"-12px",left:"-16px",background:"#dc3545",borderRadius:"50%",width:"12px",height:"12px",display:!f.isRead?"inline":"none"}}></span>
           <i className="fa-regular fa-user"></i>{" "}
           <small className="ms-2  ">
             <span>
@@ -86,10 +92,12 @@ function Friends(props) {
             -<small> 
               @{f.users[0].userName}
             </small>
-            {/* <span className="ms-1 text-danger"style={{fontSize:"1.1em"}}>(2)</span> */}
+            {/* <span className="ms-1 text-danger"style={{fontSize:"1.1em"}}>()</span> */}
+           
             {/* {onlineFriends.some((x) => x.userName == f.userName) && ( */}
             {/*)}*/}
           </small>
+          
         </span>
         {onlineFriends.some((e) => e === f.users[0].userName) && (
           <span className="text-success ms-2 fw-bold">
