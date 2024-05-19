@@ -41,7 +41,9 @@ function Friends(props) {
         userName: obj.users[0].userName,
         groupId:obj.id
       })
+      
     );
+    
     props.conn?.invoke("MakeMessagesRead",obj.id)
     dispatch(setHasUnreadMessagesFlag({groupId:obj.id,isRead:true}))
     

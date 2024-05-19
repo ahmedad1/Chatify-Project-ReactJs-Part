@@ -11,37 +11,52 @@ import Cookies from "cookie-universal";
 function Messages(props) {
   let currentChat = useSelector((x) => x.currentChat);
   let messages = useSelector((x) => x.messages);
+  let currentScrollTop=useRef(0)
   const cookies = Cookies();
   let messageTextRef = useRef();
   let messagesTextsParentRef = useRef();
   const [isTyping,setIsTyping]=useState(false);// for the current user who Authenticated
   const navigate = useNavigate();
   let dispatch = useDispatch();
+ async function getPagedMessages(pageNum){
+    sendRequestAuth(
+      `${BACKEND_BASEURL}api/Chat/group/${currentChat.groupId}/messages/page/${pageNum}`
+    ).then((res) => {
+      if (!res) {
+        AlertSessionEnded(navigate, dispatch, signOut);
+        return;
+      } else if (res.status !== 200) {
+        Swal.fire({ title: "Something Went Wrong", icon: "error" });
+        return;
+      } else {
+        if(res.data.length!==0){
+        sessionStorage.setItem("messagesPage",+sessionStorage.getItem("messagesPage")+1)
+        dispatch(AddMessages(res.data));
+        }
+       
+      }
+    });
+  }
   useEffect(
     (_) => {
       if (!currentChat.groupId) return;
       sessionStorage.setItem("messagesPage", 1);
-      sendRequestAuth(
-        `${BACKEND_BASEURL}api/Chat/group/${currentChat.groupId}/messages/page/1`
-      ).then((res) => {
-        if (!res) {
-          AlertSessionEnded(navigate, dispatch, signOut);
-          return;
-        } else if (res.status !== 200) {
-          Swal.fire({ title: "Something Went Wrong", icon: "error" });
-          return;
-        } else {
-          dispatch(AddMessages(res.data));
-        }
-      });
+      getPagedMessages(1)
     },
     [currentChat.groupId]
   );
   useEffect((_) => {
-    messagesTextsParentRef.current?.scrollTo(
-      0,
-      messagesTextsParentRef.current.scrollHeight
-    );
+
+    if(+sessionStorage.getItem("messagesPage")===2){
+      messagesTextsParentRef.current?.scrollTo(
+    0,
+    messagesTextsParentRef.current.scrollHeight
+  )}
+  else{
+ 
+
+    messagesTextsParentRef.current?.scrollTo(0,messagesTextsParentRef.current.scrollHeight-currentScrollTop.current)
+  }
   });
   // if (!messages.some(x=>x.userName==currentChat.userName)){
   // return<></>
@@ -94,6 +109,24 @@ function Messages(props) {
    
     
   }
+  function handleScrollPagination(e){
+   
+  if(e.target.scrollTop!==0)
+    return
+  let messagesPage=sessionStorage.getItem("messagesPage")
+  if(!messagesPage||isNaN(messagesPage)){
+    sessionStorage.setItem("messagesPage",1)
+    messagesPage=1
+  }
+  
+  currentScrollTop.current=e.target.scrollHeight
+
+  getPagedMessages(+messagesPage)
+  
+
+
+  
+  }
   return (
     <div
       style={{ overflowY: "auto" }}
@@ -103,6 +136,7 @@ function Messages(props) {
         ref={messagesTextsParentRef}
         className="messages-texts text-light mb-3"
         style={{ overflow: "auto" }}
+        onScroll={e=>{handleScrollPagination(e)}}
       >
         <ul className="list-unstyled">{messagesJSX}</ul>
       </div>

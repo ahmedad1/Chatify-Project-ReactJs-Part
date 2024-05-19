@@ -92,7 +92,7 @@ var Authenticated=(props)=>{
             <div className="container">
 
 
-                <Link onClick={_=>{dispatch(setCurrentChat({}))}} to="/"className="navbar-brand text-info ">Chatify</Link>
+                <Link onClick={_=>{ dispatch(ClearMessages());sessionStorage.setItem("messagesPage",1);dispatch(setCurrentChat({}))}} to="/"className="navbar-brand text-info ">Chatify</Link>
                 <a href="#navbarList" data-bs-toggle="collapse" className="navbar-toggler"><span className="navbar-toggler-icon"></span></a>
                 <div className="collapse navbar-collapse " id="navbarList">
                     <ul className="navbar-nav ms-auto">

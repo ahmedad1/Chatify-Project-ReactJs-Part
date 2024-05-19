@@ -5,7 +5,7 @@ name:"MessagesSlice",
 initialState:[],
 reducers:{
     AddMessages:(state,action)=>{
-        return [...state,...action.payload]
+        return [...action.payload,...state]
     },
   
     ClearMessages:(state,action)=>{
