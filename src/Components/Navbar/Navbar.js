@@ -39,7 +39,6 @@ var NotAuthenticated=(props)=>{
                 <div className="collapse navbar-collapse " id="navbarList">
                     <ul className="navbar-nav ms-auto">
                         <li className="nav-item"><Link to="/" className="nav-link active">Home</Link></li>
-                        <li className="nav-item"><a className="nav-link">Contact Us</a></li>
                     </ul>
                     <Link to="/login"  className="btn btn-outline-info ms-lg-2 mt-lg-0 mt-2 ">Login</Link>
                 </div>
@@ -98,7 +97,6 @@ var Authenticated=(props)=>{
                 <div className="collapse navbar-collapse " id="navbarList">
                     <ul className="navbar-nav ms-auto">
                         <li className="nav-item"><Link onClick={_=>{dispatch(setCurrentChat({}))}} to="/" className="nav-link active">Home</Link></li>
-                        <li className="nav-item"><a className="nav-link">Contact Us</a></li>
                         <li className="nav-item"><a className="nav-link text-info"><i className="fa-regular fa-user"></i> {cookies.get("firstName")}</a></li>
 
                     </ul>
