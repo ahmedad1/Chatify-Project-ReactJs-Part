@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AddMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
+import { AddMessages, AddRealTimeMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
 import sendRequestAuth from "../../HelperSharedMethods/SendRequestAuth";
 import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
 import Swal from "sweetalert2";
@@ -11,14 +11,14 @@ import Cookies from "cookie-universal";
 function Messages(props) {
   let currentChat = useSelector((x) => x.currentChat);
   let messages = useSelector((x) => x.messages);
-  let currentScrollTop=useRef(0)
+  let currentScrollTop = useRef(0);
   const cookies = Cookies();
   let messageTextRef = useRef();
   let messagesTextsParentRef = useRef();
-  const [isTyping,setIsTyping]=useState(false);// for the current user who Authenticated
+  const [isTyping, setIsTyping] = useState(false); // for the current user who Authenticated
   const navigate = useNavigate();
   let dispatch = useDispatch();
- async function getPagedMessages(pageNum){
+  async function getPagedMessages(pageNum) {
     sendRequestAuth(
       `${BACKEND_BASEURL}api/Chat/group/${currentChat.groupId}/messages/page/${pageNum}`
     ).then((res) => {
@@ -29,11 +29,13 @@ function Messages(props) {
         Swal.fire({ title: "Something Went Wrong", icon: "error" });
         return;
       } else {
-        if(res.data.length!==0){
-        sessionStorage.setItem("messagesPage",+sessionStorage.getItem("messagesPage")+1)
-        dispatch(AddMessages(res.data));
+        if (res.data.length !== 0) {
+          sessionStorage.setItem(
+            "messagesPage",
+            +sessionStorage.getItem("messagesPage") + 1
+          );
+          dispatch(AddMessages(res.data));
         }
-       
       }
     });
   }
@@ -41,22 +43,22 @@ function Messages(props) {
     (_) => {
       if (!currentChat.groupId) return;
       sessionStorage.setItem("messagesPage", 1);
-      getPagedMessages(1)
+      getPagedMessages(1);
     },
     [currentChat.groupId]
   );
-  useEffect((_) => {
-
-    if(+sessionStorage.getItem("messagesPage")===2){
+  useLayoutEffect((_) => {
+    if (+sessionStorage.getItem("messagesPage") === 2) {
       messagesTextsParentRef.current?.scrollTo(
-    0,
-    messagesTextsParentRef.current.scrollHeight
-  )}
-  else{
- 
-
-    messagesTextsParentRef.current?.scrollTo(0,messagesTextsParentRef.current.scrollHeight-currentScrollTop.current)
-  }
+        0,
+        messagesTextsParentRef.current.scrollHeight
+      );
+    } else {
+      messagesTextsParentRef.current?.scrollTo(
+        0,
+        messagesTextsParentRef.current.scrollHeight - currentScrollTop.current
+      );
+    }
   });
   // if (!messages.some(x=>x.userName==currentChat.userName)){
   // return<></>
@@ -68,21 +70,22 @@ function Messages(props) {
       "SendMessage",
       messageTextRef.current.value,
       currentChat.groupId
-    );
-    
+    ).catch(rej=>props.conn.start().then(res=>{handleSendMessage()}));
+
     //userName represents the sender's userName here:
     dispatch(
-      AddMessages([
+      AddRealTimeMessages([
         {
+          id:+messages.reduce((max,message)=>{return max.id>message.id?max.id:message.id})+1,
           message: messageTextRef.current.value,
           userName: cookies.get("userName"),
           groupId: currentChat.groupId,
+          isRead:true
         },
       ])
     );
-    messageTextRef.current.value=''
-    if(isTyping)
-    setIsTyping(false)
+    messageTextRef.current.value = "";
+    if (isTyping) setIsTyping(false);
   }
   let messagesJSX = messages.map((m) => {
     return (
@@ -99,33 +102,24 @@ function Messages(props) {
   });
   function handleAlertTyping() {
     if (!currentChat.groupId) return;
-    if(isTyping==true)
-      return
+    if (isTyping == true) return;
     props.conn?.invoke("TypingAlert", currentChat.groupId);
-    setIsTyping(true)
-    let timeOut=setTimeout(_=>{
-      setIsTyping(false)
-    },1000)
-   
-    
+    setIsTyping(true);
+    let timeOut = setTimeout((_) => {
+      setIsTyping(false);
+    }, 1000);
   }
-  function handleScrollPagination(e){
-   
-  if(e.target.scrollTop!==0)
-    return
-  let messagesPage=sessionStorage.getItem("messagesPage")
-  if(!messagesPage||isNaN(messagesPage)){
-    sessionStorage.setItem("messagesPage",1)
-    messagesPage=1
-  }
-  
-  currentScrollTop.current=e.target.scrollHeight
+  function handleScrollPagination(e) {
+    if (e.target.scrollTop !== 0||+sessionStorage.getItem("messagesPage")<2) return;
+    let messagesPage = sessionStorage.getItem("messagesPage");
+    if (!messagesPage || isNaN(messagesPage)) {
+      sessionStorage.setItem("messagesPage", 1);
+      messagesPage = 1;
+    }
 
-  getPagedMessages(+messagesPage)
-  
+    currentScrollTop.current = e.target.scrollHeight;
 
-
-  
+    getPagedMessages(+messagesPage);
   }
   return (
     <div
@@ -136,7 +130,9 @@ function Messages(props) {
         ref={messagesTextsParentRef}
         className="messages-texts text-light mb-3"
         style={{ overflow: "auto" }}
-        onScroll={e=>{handleScrollPagination(e)}}
+        onScroll={(e) => {
+          handleScrollPagination(e);
+        }}
       >
         <ul className="list-unstyled">{messagesJSX}</ul>
       </div>
@@ -149,7 +145,9 @@ function Messages(props) {
           onChange={(e) => {
             handleAlertTyping(e);
           }}
-          onKeyDown={e=>{if(e.key=="Enter")handleSendMessage()}}
+          onKeyDown={(e) => {
+            if (e.key == "Enter") handleSendMessage();
+          }}
         />
         <input
           onClick={async (e) => {

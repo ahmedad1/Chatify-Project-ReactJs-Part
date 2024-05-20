@@ -15,14 +15,14 @@ import {
 } from "../../Redux-Toolkit/Slices/FriendsSlice";
 import { Puff, ThreeDots } from "react-loader-spinner";
 import { ClearMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
-
+import Cookies from "cookie-universal"
 function Friends(props) {
   const [hasEnabledLoader, setHasEnabledLoader] = useState(false);
   const currentChat=useSelector(x=>x.currentChat)
   const messages=useSelector(x=>x.messages)
   const dispatch = useDispatch();
   let onlineFriends = useSelector((x) => x.onlineFriends);
-
+  const cookies=Cookies()
   const navigate = useNavigate();
   let FriendsSelector = useSelector((x) => x.Friends);
   let mediaQuery = matchMedia("(min-width:992px)");
@@ -33,6 +33,7 @@ function Friends(props) {
     }
     if(currentChat.groupId===obj.id)
       return
+    sessionStorage.setItem("messagesPage",1)
     dispatch(ClearMessages())
     dispatch(
       setCurrentChat({
@@ -41,12 +42,14 @@ function Friends(props) {
         userName: obj.users[0].userName,
         groupId:obj.id
       })
-      
     );
-    
-    props.conn?.invoke("MakeMessagesRead",obj.id)
+    let userNameAccount=cookies.get("userName");
+    if(FriendsSelector.groups.some(x=>x.isRead==false&&x.userName!=userNameAccount&&x.id==obj.id)){
+    props.conn?.invoke("MakeMessagesRead",obj.id).catch(res=>{
+      props.conn.start()
+    })
     dispatch(setHasUnreadMessagesFlag({groupId:obj.id,isRead:true}))
-    
+  }
   }
   useEffect((_) => {
     if (FriendsSelector.groups.length == 0) {

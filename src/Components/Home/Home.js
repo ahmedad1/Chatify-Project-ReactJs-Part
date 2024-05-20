@@ -22,7 +22,7 @@ import { setHasFriendRequestsFlag } from "../../Redux-Toolkit/Slices/HasFriendRe
 import { removeRequest, setNewRequest } from "../../Redux-Toolkit/Slices/RequestsSlice";
 import { addFriends, setHasUnreadMessagesFlag } from "../../Redux-Toolkit/Slices/FriendsSlice";
 import { addOnlineFriends, removeOnlineFriend } from "../../Redux-Toolkit/Slices/OnlineFriendsSlice";
-import { AddMessages, MakeMessagesOfGroupRead } from "../../Redux-Toolkit/Slices/MessagesSlice";
+import { AddMessages, AddRealTimeMessages, MakeMessagesOfGroupRead } from "../../Redux-Toolkit/Slices/MessagesSlice";
 import { setIsTypingFlag } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
 import { ClearResultOfSearch, removeFromResultOfSearch, setGotRequestFlagOfSearch, setResultOfSearch } from "../../Redux-Toolkit/Slices/SearchSlice";
 function Home(props) {
@@ -154,7 +154,7 @@ var HomeAutenticated = (props) => {
       if(currentChatRef.current.groupId==groupId){
       dispatch(setIsTypingFlag(false))
       conn.invoke("MakeMessagesRead",groupId)
-      dispatch(AddMessages([{id:messageid,message:message,userName:userName,groupId:groupId,isRead:true}]))
+      dispatch(AddRealTimeMessages([{id:messageid,message:message,userName:userName,groupId:groupId,isRead:true}]))
 
       }else{
         dispatch(setHasUnreadMessagesFlag({groupId:groupId,isRead:false}))
