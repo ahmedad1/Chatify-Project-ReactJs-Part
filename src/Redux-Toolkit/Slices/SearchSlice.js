@@ -5,7 +5,7 @@ let SearchSlice=createSlice({
     initialState:[],
     reducers:{
         setResultOfSearch:(state,action)=>{
-            return action.payload
+            return [...state,...action.payload]
         },
         removeFromResultOfSearch:(state,action)=>{
             return state.filter(x=>x.userName!=action.payload)

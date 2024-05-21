@@ -171,6 +171,7 @@ var HomeAutenticated = (props) => {
     const pageKey = "search-people";
 
     sessionStorage.setItem(pageKey, 1);
+    sessionStorage.setItem("search-key",e);
     setSearchSpinner(true);
     const response = await sendRequestAuth(
       `${backend}api/FriendRequest/people/${sessionStorage.getItem(
