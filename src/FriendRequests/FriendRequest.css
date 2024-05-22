@@ -1,10 +1,17 @@
 .request{
     background-color:rgba(255, 255, 255, .7) !important;
-    
+   align-items: center !important; 
+   
 }
 .response-button{
     cursor: pointer;
     
+}
+#responseBtns{
+    flex-wrap: wrap !important;
+    /* justify-content: center !important; */
+    min-width: 6em !important;
+
 }
 
 @media(max-width:991px){

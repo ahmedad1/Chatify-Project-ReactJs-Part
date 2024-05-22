@@ -137,6 +137,7 @@ var HomeAutenticated = (props) => {
       }
       dispatch(addFriends([{
         id:groupId,
+        isRead:true,
         users:[{userName:userName,firstName:firstName,lastName:lastName}]
       }]))
      
