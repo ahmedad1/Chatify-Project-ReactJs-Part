@@ -105,9 +105,10 @@ function ResultSearchPeople(props) {
       Swal.fire({ title: "Something went wrong ... try again", icon: "error" });
     } else {
       // setResultOfSearch(response.data);
+      if(response.data?.length!==0)
+      window.sessionStorage.setItem(pageKey, +window.sessionStorage.getItem(pageKey) + 1);
       dispatch(setResultOfSearch(response.data));
     }
-    window.sessionStorage.setItem(pageKey, +window.sessionStorage.getItem(pageKey) + 1);
   }
   return (
     <>
