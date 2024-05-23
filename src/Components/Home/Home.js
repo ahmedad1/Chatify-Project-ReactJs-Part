@@ -39,8 +39,7 @@ var HomeNotAuthenticated = (props) => {
           Chatify for messages & video calls
         </h2>
         <p className=" mt-4 subTitle text-center">
-          Chat with your family, friends and anyone, You can also share your own
-          PC screen if you want to your peer
+          Chat with your family, friends and anyone, Join us and send a friend request to anyone to start chatting
         </p>
         <Link to="/sign-up" className="btn btn-outline-warning mt-4">
           {" "}

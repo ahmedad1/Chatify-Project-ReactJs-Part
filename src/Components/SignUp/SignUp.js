@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 function SignUp() {
   const navigate = useNavigate();
   let userNameInputRef = useRef();
@@ -23,10 +24,12 @@ function SignUp() {
 
     firstNameInputRef.current.focus();
   }, []);
+  const getTokenRecaptcha=useGoogleReCaptcha()
   async function submitionHandler(e) {
     e.preventDefault();
     let result;
     document.querySelector(".fa-spinner").classList.remove("d-none");
+    const token=await getTokenRecaptcha.executeRecaptcha("signup");
     try {
       result = await axios.post(`${backendUrl}api/Account/sign-up`, {
         firstName: firstName,
@@ -34,6 +37,7 @@ function SignUp() {
         email: email,
         userName: userName,
         password: password,
+        recaptchaToken:token
       });
       localStorage.setItem("email", email);
       navigate("/verification");

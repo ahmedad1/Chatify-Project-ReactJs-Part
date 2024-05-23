@@ -6,6 +6,8 @@ import Main from "../Main/Main";
 import axios from "axios";
 import checkAllCookies from "../../CookiesHandler/checkAllCookies";
 import Swal from "sweetalert2";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+
 import BACKEND_BASEURL from "../../backend-baseurl/backend-baseurl";
 function Login() {
   const navigate = useNavigate();
@@ -15,19 +17,22 @@ function Login() {
   let userNameInputRef = useRef();
   let passwordInputRef = useRef();
   let backendOrigin = BACKEND_BASEURL
+  const getTokenRecaptcha=useGoogleReCaptcha();
 
   useEffect((_) => {
     if (checkAllCookies()) navigate("/");
     userNameInputRef.current.focus();
   }, []);
+
   async function loginBtnHandler(e) {
     e.preventDefault();
     document.querySelector(".fa-spinner").classList.remove("d-none");
-
     try {
+      const token=await getTokenRecaptcha.executeRecaptcha("login")
+      
       const result = await axios.post(
         `${backendOrigin}api/Account/login`,
-        { userName: userName, password: password },
+        { userName: userName, password: password,recaptchaToken:token },
         { withCredentials: true }
       );
       document.querySelector(".fa-spinner").classList.add("d-none");

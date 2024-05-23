@@ -64,8 +64,14 @@ function Messages(props) {
   // return<></>
   // }
   function handleSendMessage() {
-    if (!messageTextRef.current?.value.length) return;
+    if (!messageTextRef.current?.value.length) 
+      return
+    if(messageTextRef.current?.value.length>2000){
+      Swal.fire({title:"Message's length should be between 1 and 2000 characters",icon:"error"})
+      return
+    }
     if (!currentChat.groupId) return;
+   
     props.conn?.invoke(
       "SendMessage",
       messageTextRef.current.value,
