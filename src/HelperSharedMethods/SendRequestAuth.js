@@ -6,14 +6,14 @@ async function sendRequestAuth(url, method, body = null) {
     method?.toLowerCase() === "get"
       ? {
           method: method,
-          url: url,
-          withCredentials: true,
+          url: url
+          // ,withCredentials: true,
         }
       : {
           method: method,
           url: url,
-          data: body,
-          withCredentials: true,
+          data: body
+          // ,withCredentials: true,
           
         };
   try {

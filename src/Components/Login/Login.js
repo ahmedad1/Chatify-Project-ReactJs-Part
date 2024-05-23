@@ -32,8 +32,8 @@ function Login() {
       
       const result = await axios.post(
         `${backendOrigin}api/Account/login`,
-        { userName: userName, password: password,recaptchaToken:token },
-        { withCredentials: true }
+        { userName: userName, password: password,recaptchaToken:token }
+        // ,{ withCredentials: true }
       );
       document.querySelector(".fa-spinner").classList.add("d-none");
 

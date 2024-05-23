@@ -81,7 +81,10 @@ var HomeAutenticated = (props) => {
   })
   async function connectToSignalR() {
     const conn = new signalR.HubConnectionBuilder()
-      .withUrl(`${backend}chat`, { withCredentials: true })
+      .withUrl(`${backend}chat`
+      // , { withCredentials: true }
+
+      )
       .build();
     try {
       await conn.start();

@@ -56,7 +56,9 @@ var Authenticated=(props)=>{
    async function signOutHandler(){
     document.querySelector(".fa-spinner").classList.remove("d-none")
     try{
-        await axios.delete(`${backendUrl}api/Account/sign-out`,{withCredentials:true})
+        await axios.delete(`${backendUrl}api/Account/sign-out`
+        // ,{withCredentials:true}
+        )
         navigate("/")
         dispatch(signOut())
         dispatch(clearRequests());

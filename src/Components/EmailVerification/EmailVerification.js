@@ -19,8 +19,8 @@ function EmailVerification(props) {
           `${backendUrl}api/Account/code/send`,
           {
             email: localStorage.getItem("email"),
-          },
-          { withCredentials: true }
+          }
+          //, { withCredentials: true }
         );
       } catch (e) {
         Swal.fire(
@@ -65,8 +65,8 @@ function EmailVerification(props) {
         {
           email: localStorage.getItem("email"),
           code: inputCodeRef.current.value,
-        },
-        { withCredentials: true }
+        }
+        //, { withCredentials: true }
       );
       Swal.fire({ title: "Confirmed Successfully", icon: "success" }).then(
         (res) => {

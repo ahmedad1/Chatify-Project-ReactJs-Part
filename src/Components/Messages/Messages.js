@@ -82,7 +82,7 @@ function Messages(props) {
     dispatch(
       AddRealTimeMessages([
         {
-          id:+messages.reduce((max,message)=>{return max.id>message.id?max.id:message.id})+1,
+          id:messages.length===0?1:+messages.reduce((max,message)=>{return max.id>message.id?max.id:message.id})+1,
           message: messageTextRef.current.value,
           userName: cookies.get("userName"),
           groupId: currentChat.groupId,
@@ -95,11 +95,11 @@ function Messages(props) {
   }
   let messagesJSX = messages.map((m) => {
     return (
-      <li key={m.id} className="mt-1">
+      <li key={m.id} className="mt-1 d-flex" style={{gap:"5px"}}>
         <span className="text-info ">
           {m.userName == cookies.get("userName")
             ? "You"
-            : currentChat.firstName}{" "}
+            : currentChat.userName}{" "}
           :
         </span>{" "}
         <span style={{ overflowWrap: "break-word" }}>{m.message}</span>

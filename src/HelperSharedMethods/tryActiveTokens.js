@@ -6,9 +6,11 @@ async function tryActiveTokens() {
   const backend = BACKEND_BASEURL;
 
   try {
-    await axios.post(`${backend}api/Account/tokens`, null, {
-      withCredentials: true,
-    });
+    await axios.post(`${backend}api/Account/tokens`, null
+    // , {
+    //   withCredentials: true,
+    // }
+  );
     return true;
   } catch (e) {
     if (e.response.status == 401) {
