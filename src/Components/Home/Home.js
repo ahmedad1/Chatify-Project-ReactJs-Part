@@ -25,6 +25,7 @@ import { addOnlineFriends, removeOnlineFriend } from "../../Redux-Toolkit/Slices
 import { AddMessages, AddRealTimeMessages, MakeMessagesOfGroupRead } from "../../Redux-Toolkit/Slices/MessagesSlice";
 import { setIsTypingFlag } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
 import { ClearResultOfSearch, removeFromResultOfSearch, setGotRequestFlagOfSearch, setResultOfSearch } from "../../Redux-Toolkit/Slices/SearchSlice";
+import axios from "axios";
 function Home(props) {
   return (
     <>{checkAllCookies() ? <HomeAutenticated /> : <HomeNotAuthenticated />}</>
@@ -79,16 +80,22 @@ var HomeAutenticated = (props) => {
    currentChatRef.current=currentChat
   //  resultOfSearchRef.current=resultOfSearch
   })
-  async function connectToSignalR() {
-    const conn = new signalR.HubConnectionBuilder()
+  async function connectToSignalR(makeNewObj=true) {
+    let connectionS;
+    if(makeNewObj){
+      connectionS= new signalR.HubConnectionBuilder()
       .withUrl(`${backend}chat`
       // , { withCredentials: true }
 
       )
       .build();
+    }else{
+      connectionS=conn
+    }
     try {
-      await conn.start();
-      setConn(conn);
+      await connectionS.start();
+      if(makeNewObj)
+      setConn(connectionS);
     } catch (e) {
       if (e.toString().includes("Status code '401'")) {
         let result = await tryActiveTokens();
@@ -163,7 +170,32 @@ var HomeAutenticated = (props) => {
         dispatch(setHasUnreadMessagesFlag({groupId:groupId,isRead:false}))
       }
     })
+    window.navigator.connection.onchange=async e=>{
+      try {
+        console.log("t");
+        await axios.get(`${BACKEND_BASEURL}api/Account/dummy`)
+      
+        if(sessionStorage.getItem("connection")=="false"){
+        console.log("if");
+
+          await connectToSignalR(false)
+          sessionStorage.setItem("connection",true)
+        }
+        //still online but the internet is slow
+      } catch {
+        //is offline
+      
+
+        await conn.stop();
+        await Swal.fire("Your internet connection is lost")
+        sessionStorage.setItem("connection",false)
+
+
+      }
+    
+    }
     return async function () {
+      window.navigator.connection.onchange=null;
       await conn?.stop();
     };
   }, [conn]);

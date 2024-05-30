@@ -20,6 +20,7 @@ let store=configureStore({
         onlineFriends:OnlineFriendsReducer,
         messages:MessagesReducer,
         searchResult:SearchReducer
-    }
+    },
+    devTools:false
 })
 export default store
