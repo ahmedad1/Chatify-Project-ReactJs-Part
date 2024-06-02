@@ -54,6 +54,10 @@ var Authenticated=(props)=>{
    const backendUrl=BACKEND_BASEURL
    const navigate=useNavigate()
    async function signOutHandler(){
+    if(sessionStorage.getItem("connection")=="false"){
+        Swal.fire("Your internet connection has been lost")
+        return
+      }
     document.querySelector(".fa-spinner").classList.remove("d-none")
     try{
         await axios.delete(`${backendUrl}api/Account/sign-out`

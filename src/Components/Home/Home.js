@@ -19,12 +19,30 @@ import tryActiveTokens from "../../HelperSharedMethods/tryActiveTokens";
 import FriendRequests from "../../FriendRequests/FriendRequests";
 import { Oval, Puff } from "react-loader-spinner";
 import { setHasFriendRequestsFlag } from "../../Redux-Toolkit/Slices/HasFriendRequestsSlice";
-import { removeRequest, setNewRequest } from "../../Redux-Toolkit/Slices/RequestsSlice";
-import { addFriends, setHasUnreadMessagesFlag } from "../../Redux-Toolkit/Slices/FriendsSlice";
-import { addOnlineFriends, removeOnlineFriend } from "../../Redux-Toolkit/Slices/OnlineFriendsSlice";
-import { AddMessages, AddRealTimeMessages, MakeMessagesOfGroupRead } from "../../Redux-Toolkit/Slices/MessagesSlice";
+import {
+  removeRequest,
+  setNewRequest,
+} from "../../Redux-Toolkit/Slices/RequestsSlice";
+import {
+  addFriends,
+  setHasUnreadMessagesFlag,
+} from "../../Redux-Toolkit/Slices/FriendsSlice";
+import {
+  addOnlineFriends,
+  removeOnlineFriend,
+} from "../../Redux-Toolkit/Slices/OnlineFriendsSlice";
+import {
+  AddMessages,
+  AddRealTimeMessages,
+  MakeMessagesOfGroupRead,
+} from "../../Redux-Toolkit/Slices/MessagesSlice";
 import { setIsTypingFlag } from "../../Redux-Toolkit/Slices/CurrentChatSlice";
-import { ClearResultOfSearch, removeFromResultOfSearch, setGotRequestFlagOfSearch, setResultOfSearch } from "../../Redux-Toolkit/Slices/SearchSlice";
+import {
+  ClearResultOfSearch,
+  removeFromResultOfSearch,
+  setGotRequestFlagOfSearch,
+  setResultOfSearch,
+} from "../../Redux-Toolkit/Slices/SearchSlice";
 import axios from "axios";
 function Home(props) {
   return (
@@ -40,7 +58,8 @@ var HomeNotAuthenticated = (props) => {
           Chatify for messages & video calls
         </h2>
         <p className=" mt-4 subTitle text-center">
-          Chat with your family, friends and anyone, Join us and send a friend request to anyone to start chatting
+          Chat with your family, friends and anyone, Join us and send a friend
+          request to anyone to start chatting
         </p>
         <Link to="/sign-up" className="btn btn-outline-warning mt-4">
           {" "}
@@ -67,35 +86,36 @@ var HomeAutenticated = (props) => {
 
   // const [resultOfSearch, setResultOfSearch] = useState([]);
   // let resultOfSearchRef=useRef(resultOfSearch)
-  let hasRequests=useSelector(x=>x.hasRequestsFlag)
-  let newRequestSignal=useSelector(x=>x.newRequestSignal)
-  let currentChat=useSelector(x=>x.currentChat)
-  let currentChatRef=useRef(currentChat)
+  let hasRequests = useSelector((x) => x.hasRequestsFlag);
+  let newRequestSignal = useSelector((x) => x.newRequestSignal);
+  let currentChat = useSelector((x) => x.currentChat);
+  let currentChatRef = useRef(currentChat);
   const [currentSection, setCurrentSection] = useState(false); //false : friends , true: friend-requests
-  let currentSectionRef=useRef(currentSection);
-  let searchedRef=useRef(searched)
-  useEffect(_=>{
-   currentSectionRef.current=currentSection
-   searchedRef.current=searched
-   currentChatRef.current=currentChat
-  //  resultOfSearchRef.current=resultOfSearch
-  })
-  async function connectToSignalR(makeNewObj=true) {
+  let currentSectionRef = useRef(currentSection);
+  let searchedRef = useRef(searched);
+  let reconnectingRef = useRef();
+  let connectedSpanRef=useRef();
+  useEffect((_) => {
+    currentSectionRef.current = currentSection;
+    searchedRef.current = searched;
+    currentChatRef.current = currentChat;
+    //  resultOfSearchRef.current=resultOfSearch
+  });
+  async function connectToSignalR(makeNewObj = true) {
     let connectionS;
-    if(makeNewObj){
-      connectionS= new signalR.HubConnectionBuilder()
-      .withUrl(`${backend}chat`
-      // , { withCredentials: true }
-
-      )
-      .build();
-    }else{
-      connectionS=conn
+    if (makeNewObj) {
+      connectionS = new signalR.HubConnectionBuilder()
+        .withUrl(
+          `${backend}chat`
+          // , { withCredentials: true }
+        )
+        .build();
+    } else {
+      connectionS = conn;
     }
     try {
       await connectionS.start();
-      if(makeNewObj)
-      setConn(connectionS);
+      if (makeNewObj) setConn(connectionS);
     } catch (e) {
       if (e.toString().includes("Status code '401'")) {
         let result = await tryActiveTokens();
@@ -109,104 +129,126 @@ var HomeAutenticated = (props) => {
       }
     }
   }
-  useEffect((_) => {
-    if(conn ===null)
-    connectToSignalR()
-    conn?.on("newOneActive", (userName, firstName, lastName) => {
-      if (userName != cookies.get("userName")) {
-      dispatch(addOnlineFriends([userName]))
-      }
-    });
-    conn?.on("allActiveUsers",(userNames)=>{
-      dispatch(addOnlineFriends(userNames))
-    })
-    conn?.on("isNotActive",(userName)=>{
-      dispatch(removeOnlineFriend(userName))
-    })
-    conn?.on("friendRequest",(userName,firstName,lastName)=>{
-      
-      dispatch(setNewRequest([{userName:userName,firstName:firstName,lastName:lastName}]))
-      if(!currentSectionRef.current){
-        dispatch(setHasFriendRequestsFlag(true))
-        
-      }
-  
-    })
-    conn?.on("friendRequestCancelled",(userName)=>{
-      dispatch(removeRequest(userName))
-      if(!currentSectionRef.current){
-        dispatch(setHasFriendRequestsFlag(false))
-
-      }
-    })
-    conn?.on("requestAccepted",(userName,firstName,lastName,groupId)=>{
-      if(searchedRef.current){
-        
-        dispatch(removeFromResultOfSearch(userName))
-      }
-      dispatch(addFriends([{
-        id:groupId,
-        isRead:true,
-        users:[{userName:userName,firstName:firstName,lastName:lastName}]
-      }]))
-     
-    })
-    conn?.on("requestRejected",(userName)=>{
-      
-      if(searchedRef.current){
-       
-        dispatch(setGotRequestFlagOfSearch({userName:userName,gotRequest:false}))
-       }
-    })
- 
-    conn?.on("newMessage",(userName,message,groupId,messageid)=>{
-   
-      if(currentChatRef.current.groupId==groupId){
-      dispatch(setIsTypingFlag(false))
-      conn.invoke("MakeMessagesRead",groupId)
-      dispatch(AddRealTimeMessages([{id:messageid,message:message,userName:userName,groupId:groupId,isRead:true}]))
-
-      }else{
-        dispatch(setHasUnreadMessagesFlag({groupId:groupId,isRead:false}))
-      }
-    })
-    window.navigator.connection.onchange=async e=>{
-      try {
-        console.log("t");
-        await axios.get(`${BACKEND_BASEURL}api/Account/dummy`)
-      
-        if(sessionStorage.getItem("connection")=="false"){
-        console.log("if");
-
-          await connectToSignalR(false)
-          sessionStorage.setItem("connection",true)
+  useEffect(
+    (_) => {
+      if (conn === null) connectToSignalR();
+      conn?.on("newOneActive", (userName, firstName, lastName) => {
+        if (userName != cookies.get("userName")) {
+          dispatch(addOnlineFriends([userName]));
         }
-        //still online but the internet is slow
-      } catch {
-        //is offline
-      
+      });
+      conn?.on("allActiveUsers", (userNames) => {
+        dispatch(addOnlineFriends(userNames));
+      });
+      conn?.on("isNotActive", (userName) => {
+        dispatch(removeOnlineFriend(userName));
+      });
+      conn?.on("friendRequest", (userName, firstName, lastName) => {
+        dispatch(
+          setNewRequest([
+            { userName: userName, firstName: firstName, lastName: lastName },
+          ])
+        );
+        if (!currentSectionRef.current) {
+          dispatch(setHasFriendRequestsFlag(true));
+        }
+      });
+      conn?.on("friendRequestCancelled", (userName) => {
+        dispatch(removeRequest(userName));
+        if (!currentSectionRef.current) {
+          dispatch(setHasFriendRequestsFlag(false));
+        }
+      });
+      conn?.on("requestAccepted", (userName, firstName, lastName, groupId) => {
+        if (searchedRef.current) {
+          dispatch(removeFromResultOfSearch(userName));
+        }
+        dispatch(
+          addFriends([
+            {
+              id: groupId,
+              isRead: true,
+              users: [
+                {
+                  userName: userName,
+                  firstName: firstName,
+                  lastName: lastName,
+                },
+              ],
+            },
+          ])
+        );
+      });
+      conn?.on("requestRejected", (userName) => {
+        if (searchedRef.current) {
+          dispatch(
+            setGotRequestFlagOfSearch({ userName: userName, gotRequest: false })
+          );
+        }
+      });
 
-        await conn.stop();
-        await Swal.fire("Your internet connection is lost")
-        sessionStorage.setItem("connection",false)
+      conn?.on("newMessage", (userName, message, groupId, messageid) => {
+        if (currentChatRef.current.groupId == groupId) {
+          dispatch(setIsTypingFlag(false));
+          if (sessionStorage.getItem("connection") == "false") return;
+          conn.invoke("MakeMessagesRead", groupId);
+          dispatch(
+            AddRealTimeMessages([
+              {
+                id: messageid,
+                message: message,
+                userName: userName,
+                groupId: groupId,
+                isRead: true,
+              },
+            ])
+          );
+        } else {
+          dispatch(
+            setHasUnreadMessagesFlag({ groupId: groupId, isRead: false })
+          );
+        }
+      });
+      window.navigator.connection.onchange = async (_) => {
+        try {
+          await axios.get(`${BACKEND_BASEURL}api/ping`);
+          if (sessionStorage.getItem("connection") == "false") {
+            reconnectingRef.current.classList.remove("d-none");
+            await connectToSignalR(false);
+            reconnectingRef.current.classList.add("d-none")
+            connectedSpanRef.current.classList.remove("d-none")
+            setTimeout((_) => {
+            connectedSpanRef.current.classList.add("d-none")
+            }, 800);
 
-
-      }
-    
-    }
-    return async function () {
-      window.navigator.connection.onchange=null;
-      await conn?.stop();
-    };
-  }, [conn]);
-
+            sessionStorage.setItem("connection", true);
+          }
+        } catch {
+          await Promise.all([
+            conn.stop(),
+            Swal.fire("Your internet connection is lost"),
+          ]);
+          sessionStorage.setItem("connection", false);
+        }
+      };
+      return async function () {
+        window.navigator.connection.onchange = null;
+        await conn?.stop();
+      };
+    },
+    [conn]
+  );
 
   async function handleSearchButton(e, event) {
     if (!e.length) return;
+    if (sessionStorage.getItem("connection") == "false") {
+      Swal.fire("Your internet connection has been lost");
+      return;
+    }
     const pageKey = "search-people";
 
     sessionStorage.setItem(pageKey, 1);
-    sessionStorage.setItem("search-key",e);
+    sessionStorage.setItem("search-key", e);
     setSearchSpinner(true);
     const response = await sendRequestAuth(
       `${backend}api/FriendRequest/people/${sessionStorage.getItem(
@@ -225,7 +267,7 @@ var HomeAutenticated = (props) => {
       Swal.fire({ title: "Something went wrong ... try again", icon: "error" });
     } else {
       // setResultOfSearch(response.data);
-      dispatch(setResultOfSearch(response.data))
+      dispatch(setResultOfSearch(response.data));
     }
     setSearched(true);
     sessionStorage.setItem(pageKey, +sessionStorage.getItem(pageKey) + 1);
@@ -241,10 +283,17 @@ var HomeAutenticated = (props) => {
               peopleSection={peopleSectionRef}
               conn={conn}
             />
-            <Messages conn={conn}/>
+            <Messages conn={conn} />
           </div>
           <div className="col-lg-4 col-12" ref={peopleSectionRef}>
-            <h3 className="text-info bg-glass p-3 rounded px-4">People </h3>
+            <h3 className="text-info bg-glass p-3 rounded px-4 d-flex justify-content-between align-items-center">
+              People{" "}
+              <span className="d-none text-info" ref={reconnectingRef}>
+                reconnecting{" "}
+                <i className="fa-solid fa-spinner fa-spin ms-2"></i>
+              </span>
+              <span className="d-none text-info"ref={connectedSpanRef}>Connected</span>
+            </h3>
             <div className="peopleSection bg-glass p-4 mt-3 rounded d-flex flex-column  ">
               <div className="d-flex gap-2">
                 <input
@@ -253,7 +302,7 @@ var HomeAutenticated = (props) => {
                   placeholder="Search for New people"
                   onChange={(e) => {
                     if (e.target.value.length <= 1 && searched) {
-                      dispatch(ClearResultOfSearch())
+                      dispatch(ClearResultOfSearch());
                       setSearched(false);
                     }
                   }}
@@ -306,26 +355,26 @@ var HomeAutenticated = (props) => {
                       parent2Ref.current.classList.add("display-parent");
                     parent1Ref.current.classList.remove("display-parent");
                     setCurrentSection(true);
-                    dispatch(setHasFriendRequestsFlag(false))
+                    dispatch(setHasFriendRequestsFlag(false));
                   }}
                 >
                   <a className="text-decoration-none nav-sidebar">
                     Friend Requests
                   </a>
-                    <Puff
-                      visible={hasRequests}
-                      height="15"
-                      width="15"
-                      color="#e00"
-                      ariaLabel="puff-loading"
-                      wrapperStyle={{}}
-                      wrapperClass="me-1"
-                    />
+                  <Puff
+                    visible={hasRequests}
+                    height="15"
+                    width="15"
+                    color="#e00"
+                    ariaLabel="puff-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="me-1"
+                  />
                 </div>
               </div>
 
-              { searched ? (
-                <ResultSearchPeople  />
+              {searched ? (
+                <ResultSearchPeople />
               ) : !currentSection ? (
                 <Friends
                   conn={conn}

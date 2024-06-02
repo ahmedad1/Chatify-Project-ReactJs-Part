@@ -16,6 +16,7 @@ import {
 import { Puff, ThreeDots } from "react-loader-spinner";
 import { ClearMessages } from "../../Redux-Toolkit/Slices/MessagesSlice";
 import Cookies from "cookie-universal"
+import TryToReconnectToSignalR from "../../HelperSharedMethods/TryReconnectingToSignalR";
 function Friends(props) {
   const [hasEnabledLoader, setHasEnabledLoader] = useState(false);
   const currentChat=useSelector(x=>x.currentChat)
@@ -26,13 +27,17 @@ function Friends(props) {
   const navigate = useNavigate();
   let FriendsSelector = useSelector((x) => x.Friends);
   let mediaQuery = matchMedia("(min-width:992px)");
-  function showMessagesHandler(obj) {
+  async function showMessagesHandler(obj) {
     if (!mediaQuery.matches) {
       props.messagesSection.current.classList.remove("d-none");
       props.peopleSection.current.classList.add("d-none");
     }
     if(currentChat.groupId===obj.id)
       return
+    if(sessionStorage.getItem("connection")=="false"){
+      Swal.fire("Your internet connection has been lost")
+      return
+    }
     sessionStorage.setItem("messagesPage",1)
     dispatch(ClearMessages())
     dispatch(
@@ -45,6 +50,16 @@ function Friends(props) {
     );
     let userNameAccount=cookies.get("userName");
     if(FriendsSelector.groups.some(x=>x.isRead==false&&x.userName!=userNameAccount&&x.id==obj.id)){
+      if (sessionStorage.getItem("connection") == "false") return;
+      if (props.conn&&props.conn.state != "Connected") {
+       
+        if(await TryToReconnectToSignalR(props.conn)===false){
+          navigate("/");
+          dispatch(signOut());
+          return
+        }
+        
+      }
     props.conn?.invoke("MakeMessagesRead",obj.id).catch(res=>{
       props.conn.start()
     })
@@ -52,6 +67,10 @@ function Friends(props) {
   }
   }
   useEffect((_) => {
+    if(sessionStorage.getItem("connection")=="false"){
+      Swal.fire("Your internet connection has been lost")
+      return
+    }
     if (FriendsSelector.groups.length == 0) {
       setHasEnabledLoader(true);
       sendRequestAuth(`${BACKEND_BASEURL}api/Chat/groups`, "get").then(
