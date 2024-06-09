@@ -209,6 +209,14 @@ var HomeAutenticated = (props) => {
           );
         }
       });
+      window.addEventListener("visibilitychange",async function(){
+        if(!document.hidden){
+          if(!conn||conn.state=="Connected"||conn.state=="Connecting")
+            return
+          await connectToSignalR(false);
+          
+        }
+      })
       window.navigator.connection.onchange = async (_) => {
         try {
           await axios.get(`${BACKEND_BASEURL}api/ping`);
